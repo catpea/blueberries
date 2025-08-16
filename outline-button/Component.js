@@ -29,6 +29,9 @@ template.innerHTML = html`
       justify-content: space-between;
 
     }
+    button:hover{
+
+    }
 
     ::slotted(*:not([slot])) {
     }

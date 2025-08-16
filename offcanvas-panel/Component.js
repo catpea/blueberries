@@ -48,12 +48,18 @@ template.innerHTML = html`
     }
 
     .visually-hidden {
-      position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(1px,1px,1px,1px);
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(1px,1px,1px,1px);
     }
+
+
 
   </style>
   <slot name="header"></slot>
-  <button part="dismiss" id="dismiss" class="visually-hidden" aria-label="Close" data-dismiss="offcanvas"></button>
+  <button part="dismiss" id="dismiss" class="dismiss visually-hidden" aria-label="Close" data-dismiss="offcanvas"></button>
   <slot></slot>
   <slot name="footer"></slot>
 `;
