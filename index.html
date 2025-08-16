@@ -13,7 +13,8 @@
       {
         "imports": {
           "#offcanvas-panel": "./offcanvas-panel/Component.js",
-          "#outline-button": "./outline-button/Component.js"
+          "#outline-button": "./outline-button/Component.js",
+          "#theme-customizer": "./theme-customizer/Component.js"
         }
       }
     </script>
@@ -22,6 +23,7 @@
 
       import { OffcanvasPanel } from "#offcanvas-panel"; // installed, now you can use <webkin-offcanvas>
       import { OutlineButton } from "#outline-button"; // installed, now you can use <webkin-offcanvas>
+      import { ThemeCustomizer } from "#theme-customizer"; // installed, now you can use <webkin-offcanvas>
 
     </script>
   </head>
@@ -150,7 +152,15 @@
           <img src="images/stock/01.jpg" width="100%">
           <div class="card-details"> Hork Hork </div>
         </div>
-        <div class="card"> <div class="card-details"> Bueno </div> </div>
+
+        <div class="card">
+          <h6> Theme Customizer </h6>
+
+          <div class="card-details">
+            <theme-customizer></theme-customizer>
+          </div>
+        </div>
+
         <div class="card"> <div class="card-details"> Bork! </div> </div>
         <div class="card"> <div class="card-details"> Twiddle! </div> </div>
         <div class="card"> <div class="card-details"> Quux! </div> </div>
