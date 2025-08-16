@@ -1,0 +1,39 @@
+
+:root {
+
+  --padding: 1rem;
+
+  /* HSL values for calculations */
+  --primary-h: 200;
+  --primary-s: 100%;
+  --primary-l: 10.6%;
+
+  /* Text color (consistent across ls) */
+  --text: #e0e0e0;
+  --link: #a0a0a0;
+
+  /* level 1 (Darkest) */
+  --l1-bg: hsl(var(--primary-h), var(--primary-s), var(--primary-l));
+  --l1-border: hsl(var(--primary-h), calc(var(--primary-s) - 10%), calc(var(--primary-l) + 5%));
+
+  /* level 2 */
+  --l2-bg: hsl(var(--primary-h), calc(var(--primary-s) - 5%), calc(var(--primary-l) + 8%));
+  --l2-border: hsl(var(--primary-h), calc(var(--primary-s) - 15%), calc(var(--primary-l) + 13%));
+
+  /* level 3 (Mid-dark) */
+  --l3-bg: hsl(var(--primary-h), calc(var(--primary-s) - 10%), calc(var(--primary-l) + 16%));
+  --l3-border: hsl(var(--primary-h), calc(var(--primary-s) - 20%), calc(var(--primary-l) + 21%));
+
+  /* level 4 */
+  --l4-bg: hsl(var(--primary-h), calc(var(--primary-s) - 15%), calc(var(--primary-l) + 24%));
+  --l4-border: hsl(var(--primary-h), calc(var(--primary-s) - 25%), calc(var(--primary-l) + 29%));
+
+  /* level 5 (Lightest) */
+  --l5-bg: hsl(var(--primary-h), calc(var(--primary-s) - 20%), calc(var(--primary-l) + 32%));
+  --l5-border: hsl(var(--primary-h), calc(var(--primary-s) - 30%), calc(var(--primary-l) + 37%));
+
+}
+
+/*@media (prefers-color-scheme: dark) {
+
+}*/

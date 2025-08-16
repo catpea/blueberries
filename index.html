@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en" data-bs-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Demo</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👾</text></svg>" />
+
+    <link href="theme.css" rel="stylesheet"> <!-- theme comes first -->
+    <link href="reset.css" rel="stylesheet">
+
+    <script type="importmap">
+      {
+        "imports": {
+          "#offcanvas-panel": "./offcanvas-panel/Component.js",
+          "#outline-button": "./outline-button/Component.js",
+        }
+      }
+    </script>
+
+    <script type="module">
+
+      import { OffcanvasPanel } from "#offcanvas-panel"; // installed, now you can use <webkin-offcanvas>
+      import { OutlineButton } from "#outline-button"; // installed, now you can use <webkin-offcanvas>
+
+    </script>
+  </head>
+  <body>
+    <!-- <button data-offcanvas-toggle data-offcanvas-target="#sidebar">Open</button> -->
+
+
+
+
+
+
+
+
+
+    <style>
+    #page {
+      display: grid;
+      width: 100%;
+      min-height: 100vh;
+      grid-template-areas:
+        "head head"
+        "nav  main"
+        ".  foot";
+      grid-template-rows: 50px 1fr 30px;
+      grid-template-columns: 150px 1fr;
+    }
+
+    #page > header {
+      grid-area: head;
+      background-color: var(--l4-bg);
+      [data-offcanvas-toggle]{
+        font-size: 2rem;
+      }
+    }
+
+    #page > nav {
+      grid-area: nav;
+      background-color: var(--l3-bg);
+      ul {
+        li {
+          list-style: none;
+          a {
+          text-decoration: none;
+            color: var(--link)
+          }
+        }
+      }
+    }
+
+    #page > main {
+      grid-area: main;
+      background-color: var(--l2-bg);
+      padding: 2rem;
+
+      display: grid;
+      /*grid-template-columns: repeat(3, 1fr);
+      */
+      /*grid-template-columns: repeat(auto-fill, 250px);*/
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      grid-auto-rows: auto;
+      grid-gap: 1rem;
+
+    }
+
+    #page > footer {
+      grid-area: foot;
+      background-color: var(--l3-bg);
+    }
+
+    .card {
+      background-color: var(--l3-bg);
+      border-radius: 1rem;
+      padding: var(--padding);
+      max-height: min(32rem, 25vh);
+    }
+
+    .card-details {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+    }
+
+    .card-details a {
+      align-self: flex-start;
+    }
+
+
+    </style>
+
+
+
+
+
+    <div class="container">
+    <div id="page">
+      <header>
+
+        <outline-button data-offcanvas-toggle data-offcanvas-target="#sidebar">&#9776;</outline-button>
+
+
+      </header>
+     	<nav>
+      		<ul class="nav">
+       			<li><a href="#" class="active">Home</a></li>
+       			<li><a href="#">About</a></li>
+       			<li><a href="#">Contact</a></li>
+      		</ul>
+       	</nav>
+
+
+      <main>
+
+        <div class="card"> <div class="card-details"> Hork Hork </div> </div>
+        <div class="card"> <div class="card-details"> Bueno </div> </div>
+        <div class="card"> <div class="card-details"> Bork! </div> </div>
+        <div class="card"> <div class="card-details"> Twiddle! </div> </div>
+        <div class="card"> <div class="card-details"> Quux! </div> </div>
+        <div class="card"> <div class="card-details"> Flarp! </div> </div>
+
+      </main>
+
+
+      <footer>Footer</footer>
+    </div>
+    </div>
+
+
+
+
+
+
+
+
+    <offcanvas-panel id="sidebar">
+      <div class="header" slot="header">
+        <div>Sidebar</div>
+        <button data-dismiss="offcanvas">&times;</button>
+      </div>
+
+      <div>Content inside the offcanvas.</div>
+
+      <div class="footer" slot="footer">
+        <small>A little footnote.</small>
+      </div>
+    </offcanvas-panel>
+
+
+  </body>
+</html>

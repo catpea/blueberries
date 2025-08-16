@@ -1,0 +1,75 @@
+/* https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion */
+/* https://developer.mozilla.org/en-US/docs/Web/CSS/scroll-behavior */
+@media (prefers-reduced-motion: no-preference) {
+  :root {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  background: var(--l1-bg);
+  color: var(--text);
+
+  margin: 0;
+
+  /* https://www.smashingmagazine.com/2015/11/using-system-ui-fonts-practical-guide/ */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+}
+
+.container {
+  width: min(100%, 992px);
+  margin: 0 auto; /* Center the container */
+}
+
+button {
+  background: var(--l4-bg);
+  border: 1px solid var(--l4-border);
+}
+
+.card {
+  background: var(--l2-bg);
+  border: 1px solid var(--l2-border);
+}
+
+.header {
+  background: var(--l3-bg);
+  border-bottom: 2px solid var(--l3-border);
+}
+
+.modal {
+  background: var(--l5-bg);
+  border: 1px solid var(--l5-border);
+}
+
+offcanvas-panel .header {
+  display: flex;
+
+  background: var(--l3-bg);
+  border-bottom: 2px solid var(--l3-border);
+
+  user-select: none;
+}
+
+offcanvas-panel > .header > :first-child {
+  flex-grow: 1;
+}
+offcanvas-panel > .header > button {
+  border-radius: 50%;
+
+  border: none;
+  outline: none;
+
+  width: 20px;
+  height: 20px;
+
+  display: flex;
+  justify-content: center;
+  align-items: normal;
+}
+
+offcanvas-panel .footer {
+  display: flex;
+
+  background: var(--l3-bg);
+  border-top: 2px solid var(--l3-border);
+}

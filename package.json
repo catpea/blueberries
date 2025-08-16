@@ -1,0 +1,31 @@
+{
+  "name": "blueberries",
+  "description": "Dark, modern, powerful, extensible, and feature-packed website theme.",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "demo": "http-server -c-1 -o .",
+    "save": "git add .; git commit -m 'Updated Release'; npm version patch; npm publish; git push --follow-tags;"
+  },
+  "keywords": [
+    "rev",
+    "fp"
+  ],
+  "author": "@catpea",
+  "license": "GPL",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/catpea/blueberries.git"
+  },
+  "bugs": {
+    "url": "https://github.com/catpea/blueberries/issues"
+  },
+  "homepage": "https://github.com/catpea/blueberries#readme",
+  "devDependencies": {
+    "heebiejeebies": "^1.0.4"
+  },
+  "localDependencies": {
+    "../heebiejeebies": "^1.0.4"
+  }
+}
