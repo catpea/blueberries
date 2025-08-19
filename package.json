@@ -1,7 +1,7 @@
 {
   "name": "blueberries",
   "description": "Dark, modern, powerful, extensible, and feature-packed website theme.",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "type": "module",
   "main": "index.js",
   "scripts": {
