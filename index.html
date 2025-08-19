@@ -14,7 +14,9 @@
         "imports": {
           "#offcanvas-panel": "./offcanvas-panel/Component.js",
           "#outline-button": "./outline-button/Component.js",
-          "#theme-customizer": "./theme-customizer/Component.js"
+          "#theme-customizer": "./theme-customizer/Component.js",
+
+          "#ladybits": "./node_modules/ladybits/index.js"
         }
       }
     </script>
@@ -39,27 +41,34 @@
 
 
     <style>
+    body {
+      padding-top: 3rem;
+    }
     #page {
+            box-shadow: 2px 0 24px 0 rgba(0,0,0,0.3);
+
       display: grid;
       width: 100%;
-      min-height: 100vh;
       grid-template-areas:
         "head head"
         "nav  main"
-        ".  foot";
-      grid-template-rows: 50px 1fr 30px;
+        "foot foot";
+      grid-template-rows: 50px 1fr 6rem;
       grid-template-columns: 150px 1fr;
     }
 
     #page > header {
       grid-area: head;
       background-color: var(--l4-bg);
+      border-top-left-radius: var(--rounded);
+      border-top-right-radius: var(--rounded);
       [data-offcanvas-toggle]{
         font-size: 2rem;
       }
     }
 
     #page > nav {
+
       grid-area: nav;
       background-color: var(--l3-bg);
       ul {
@@ -100,19 +109,34 @@
 
     }
 
+
+
     #page > footer {
+      padding: var(--padding);
+
+
+      border-bottom-left-radius: var(--rounded);
+      border-bottom-right-radius: var(--rounded);
+
       grid-area: foot;
-      background-color: var(--l3-bg);
+      background-color: var(--l5-bg);
+
+
+
     }
 
+
+
     .card {
+      border-color: var(--l3-br);
       background-color: var(--l3-bg);
-      border-radius: 1rem;
-      padding: var(--padding);
-      max-height: min(32rem, 25vh);
+      border-radius: var(--padding);
+      /*max-height: min(32rem, 25vh);*/
     }
 
     .card-details {
+      padding: var(--rounded);
+
       display: flex;
       flex-direction: column;
       justify-content: space-evenly;
@@ -120,6 +144,24 @@
 
     .card-details a {
       align-self: flex-start;
+    }
+
+    .card > img {
+      border-top-left-radius: var(--rounded);
+      border-top-right-radius: var(--rounded);
+      color: var(--link);
+      background: var(--l3-fg);
+      outline: none;
+      border: none;
+
+    }
+    .card button {
+      color: var(--link);
+      background: var(--l3-fg);
+      border-radius: 4px;
+      outline: none;
+      border: none;
+
     }
 
 
@@ -147,32 +189,69 @@
 
 
       <main>
+        <div class="card"> <img src="images/favicon/icon-512.png" width="100%"> <div class="card-details"> This is the project logo. </div> </div>
 
         <div class="card">
-          <img src="images/stock/01.jpg" width="100%">
-          <div class="card-details"> Hork Hork </div>
-        </div>
-
-        <div class="card">
-          <h6> Theme Customizer </h6>
-
           <div class="card-details">
-            <theme-customizer></theme-customizer>
+          <h3> Theme Customizer </h3>
+           Open the sidebar to poke at the Theme Customizer.
+          </div>
+          <div class="card-details">
+           <button data-offcanvas-toggle data-offcanvas-target="#sidebar">Open Sidebar</button>
           </div>
         </div>
 
-        <div class="card"> <div class="card-details"> Bork! </div> </div>
-        <div class="card"> <div class="card-details"> Twiddle! </div> </div>
-        <div class="card"> <div class="card-details"> Quux! </div> </div>
-        <div class="card"> <div class="card-details"> Flarp! </div> </div>
+        <div class="card">
+          <img src="images/stock/01.jpg" width="100%">
+          <div class="card-details">
+          </div>
+
+        </div>
+
+        <div class="card"> <img src="images/stock/02.jpg" width="100%"> <div class="card-details"> There’s a bug in my code, it’s causing distress, It crawls through the lines, making quite a mess! I’ll squash it, I’ll fix it, and debug with might, 'Til the code runs smooth and the bug takes flight. </div> </div>
+        <div class="card"> <img src="images/stock/03.jpg" width="100%"> <div class="card-details"> Foo’s a placeholder, so don’t you stress, It’s just a name when you’re in a coding mess! Variables, functions, all in disguise, Foo’s the name that can mystify. </div> </div>
+        <div class="card"> <img src="images/stock/04.jpg" width="100%"> <div class="card-details"> Bar’s a sidekick, right next to Foo, In the world of code, they’re always in view. Together they play in the logic and schemes, In the realm of programming, they’re code team dreams. </div> </div>
+        <div class="card"> <img src="images/stock/05.jpg" width="100%"> <div class="card-details"> Quux is a riddle, a cryptic old term, In programming lore, it’s a function to learn. When you see Quux, just know it’s a clue, A placeholder or name, for the coder who’s true. </div> </div>
+        <div class="card"> <img src="images/stock/06.jpg" width="100%"> <div class="card-details"> Fizzbuzz is simple, it’s a test to see, If you can count with a little decree. Divisible by three? It’s Fizz, you’ll shout, By five, it’s Buzz, you’ll figure it out! </div> </div>
+        <div class="card"> <img src="images/stock/07.jpg" width="100%"> <div class="card-details"> Spaghetti code, so tangled and tight, Loops and conditions just don’t feel right. Refactor, clean up, it’s a messy sight, But with patience and time, you’ll make it all light. </div> </div>
+        <div class="card"> <img src="images/stock/08.jpg" width="100%"> <div class="card-details"> The code is dead, but it’s risen once more, A zombie bug that you just can’t ignore. It roams through the night, unpredictable and free, Until you slay it, and it’s gone for eternity! </div> </div>
+        <div class="card"> <img src="images/stock/09.jpg" width="100%"> <div class="card-details"> Gobbledygook, a confusing old mess, Words that make no sense, just cause distress. When code turns to gibberish, hard to decode, You’ll need clarity to get it in flow. </div> </div>
+        <div class="card"> <img src="images/stock/10.jpg" width="100%"> <div class="card-details"> I’m just a N00b, learning the ropes, I stumble and fall, but I’ve got my hopes. The code’s a big world, but I’m here to play, I’ll learn with each step, and find my own way. </div> </div>
+        <div class="card"> <img src="images/stock/11.jpg" width="100%"> <div class="card-details"> I’m waffling here, just rambling away, About code, or life, or the plans for the day. When the logic’s unclear and I don’t know the next part, Sometimes I waffle, but that’s just the start! </div> </div>
+        <div class="card"> <img src="images/stock/12.jpg" width="100%"> <div class="card-details"> A snippet of code, so small and so neat, It solves a problem, makes things complete. In a line or two, it does the job fast, A handy little helper, it’s built to last. </div> </div>
+        <div class="card"> <img src="images/stock/13.jpg" width="100%"> <div class="card-details"> At the Hackathon, we code through the night, Ideas are buzzing, solutions take flight. We hack and we build, no time for sleep, In twenty-four hours, the code runs deep. </div> </div>
+        <div class="card"> <img src="images/stock/14.jpg" width="100%"> <div class="card-details"> I’m talking to my duck, explaining the plan, Sometimes just saying it helps understand. Rubber Duck Debugging, it’s a little bit strange, But the answers come clearer, when I take the range. </div> </div>
+        <div class="card"> <img src="images/stock/15.jpg" width="100%"> <div class="card-details"> "Yoda conditions, they are tricky to see," The logic gets reversed, as confusing as can be. “If true the case is,” said with wisdom so deep, In Yoda-style code, confusion can creep! </div> </div>
+        <div class="card"> <img src="images/stock/16.jpg" width="100%"> <div class="card-details"> I’m a code monkey, stuck in my chair, Typing all day with no time to spare. But when the code runs, and the bugs are all gone, I dance a small jig, feeling like I won! </div> </div>
+        <div class="card"> <img src="images/stock/17.jpg" width="100%"> <div class="card-details"> I’m a Haxor, I’m slick, I’m sharp as a tack, I code in the shadows, no skills do I lack. With a tap on the keys, I make systems bend, And leave no trace—until the very end. </div> </div>
+        <div class="card"> <img src="images/stock/18.jpg" width="100%"> <div class="card-details"> A splork of code, it’s a mix and a mash, The logic’s a jumble, it’s gone in a flash. But with a little cleanup, it all comes together, A splork can be magic, with some clever endeavor! </div> </div>
+        <div class="card"> <img src="images/stock/19.jpg" width="100%"> <div class="card-details"> Regex, oh Regex, so cryptic and wild, A pattern, a match, it’s code’s special child. From emails to numbers, it finds them with grace, But make one small error, and it’s gone without trace! </div> </div>
 
       </main>
 
 
-      <footer>Footer</footer>
-    </div>
-    </div>
+      <footer>
+        <button data-offcanvas-toggle data-offcanvas-target="#sidebar" style="background-color: var(--l3-fg); color: orange;">sidebar</button>
+        <h4>Footer</h4>
 
+
+      </footer>
+
+    </div>
+    <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>&nbsp;
+
+
+    </div>
 
 
 
@@ -186,7 +265,8 @@
         <button data-dismiss="offcanvas">&times;</button>
       </div>
 
-      <div>Content inside the offcanvas.</div>
+            <theme-customizer></theme-customizer>
+
 
       <div class="footer" slot="footer">
         <small>A little footnote.</small>

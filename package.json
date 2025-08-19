@@ -27,6 +27,10 @@
     "heebiejeebies": "^1.0.4"
   },
   "localDependencies": {
-    "../heebiejeebies": "^1.0.4"
+    "../heebiejeebies": "^1.0.4",
+    "../ladybits": "^2.0.0"
+  },
+  "dependencies": {
+    "ladybits": "^2.0.0"
   }
 }

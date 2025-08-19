@@ -136,7 +136,7 @@ export class OffcanvasPanel extends HTMLElement {
     this.dispatchEvent(new CustomEvent("show", { bubbles: true }));
 
     // Scroll lock
-    document.body.style.overflow = "hidden";
+    //TODO document.body.style.overflow = "hidden";
 
     // Save last active element
     this.#previouslyFocusedPageElement = document.activeElement;
