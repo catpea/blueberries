@@ -15,19 +15,20 @@
           "#offcanvas-panel": "./offcanvas-panel/Component.js",
           "#outline-button": "./outline-button/Component.js",
           "#theme-customizer": "./theme-customizer/Component.js",
-
-          "#ladybits": "./node_modules/ladybits/index.js"
+          "#ladybits": "https://esm.run/ladybits"
         }
       }
     </script>
+    <!--
+          "#ladybits": "./node_modules/ladybits/index.js"
+    -->
 
     <script type="module">
-
       import { OffcanvasPanel } from "#offcanvas-panel"; // installed, now you can use <webkin-offcanvas>
       import { OutlineButton } from "#outline-button"; // installed, now you can use <webkin-offcanvas>
       import { ThemeCustomizer } from "#theme-customizer"; // installed, now you can use <webkin-offcanvas>
-
     </script>
+
   </head>
   <body>
     <!-- <button data-offcanvas-toggle data-offcanvas-target="#sidebar">Open</button> -->

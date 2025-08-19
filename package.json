@@ -7,6 +7,7 @@
   "scripts": {
     "rebuild-favicon": "./bin/rebuild-favicon.sh images/favicon/icon.jpg",
     "demo": "http-server -c-1 -o .",
+    "test": "node --import 'data:text/javascript,import { register } from \"node:module\"; import { pathToFileURL } from \"node:url\"; register(pathToFileURL(\"./import-map-hooks.js\"));' --test",
     "save": "git add .; git commit -m 'Updated Release'; npm version patch; npm publish; git push --follow-tags;"
   },
   "keywords": [
@@ -24,10 +25,8 @@
   },
   "homepage": "https://github.com/catpea/blueberries#readme",
   "devDependencies": {
-    "heebiejeebies": "^1.0.4"
   },
   "localDependencies": {
-    "../heebiejeebies": "^1.0.4",
     "../ladybits": "^2.0.0"
   },
   "dependencies": {
