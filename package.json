@@ -1,7 +1,7 @@
 {
   "name": "blueberries",
   "description": "Dark, modern, powerful, extensible, and feature-packed website theme.",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "type": "module",
   "main": "index.js",
   "scripts": {
@@ -24,8 +24,7 @@
     "url": "https://github.com/catpea/blueberries/issues"
   },
   "homepage": "https://github.com/catpea/blueberries#readme",
-  "devDependencies": {
-  },
+  "devDependencies": {},
   "localDependencies": {
     "../ladybits": "^2.0.0"
   },
