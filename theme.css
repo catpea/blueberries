@@ -26,6 +26,13 @@
   --l3-fg: hsl(204deg 63% 12%);
   --l4-fg: hsl(200deg 75% 8%);
   --l5-fg: hsl(172deg 92% 12%);
+
+  /* Shadow */
+  --l1-sh: rgba(0,0,0,0.3);
+  --l2-sh: rgba(0,0,0,0.3);
+  --l3-sh: rgba(0,0,0,0.3);
+  --l4-sh: rgba(0,0,0,0.3);
+  --l5-sh: rgba(0,0,0,0.3);
 }
 
 @media (prefers-color-scheme: dark) {

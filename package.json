@@ -26,9 +26,11 @@
   "homepage": "https://github.com/catpea/blueberries#readme",
   "devDependencies": {},
   "localDependencies": {
-    "../ladybits": "^2.0.0"
+    "../ladybits": "^2.0.0",
+    "../heebiejeebies": "^1.0.5"
   },
   "dependencies": {
-    "ladybits": "^2.0.0"
+    "ladybits": "^2.0.0",
+    "heebiejeebies": "^1.0.5"
   }
 }

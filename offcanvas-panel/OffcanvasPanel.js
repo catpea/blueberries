@@ -197,5 +197,4 @@ export class OffcanvasPanel extends HTMLElement {
 
 }
 
-customElements.define("offcanvas-panel", OffcanvasPanel);
 function html(a,...b) { return (Array.from({ length: Math.max(a.length, b.length) }, (_, index) => [a[index], b[index]])).flat().join('') }  // For Code Highlighters (zed editor treats html`` as html and highlights the syntax)
