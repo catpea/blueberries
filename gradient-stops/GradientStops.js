@@ -23,12 +23,13 @@ template.innerHTML = `
     /* Horizontal positioning */
     :host(:not([vertical])) .color-stop {
       transform: translateX(-50%);
-    }
+        top: 50% !important;
+      transform-origin: center;    }
 
     /* Vertical positioning */
     :host([vertical]) .color-stop {
       transform: translateY(50%);
-      left: 50% !important;
+      left: 50% !important; /* move arrow to the right */
       transform-origin: center;
     }
 
@@ -77,9 +78,10 @@ template.innerHTML = `
 
     /* Vertical delete zone */
     :host([vertical]) .delete-zone {
-      right: -120px;
+      left: -80px;
       top: 50%;
       transform: translateY(-50%);
+      background: rgb(255 0 0 / 0.6);
     }
 
     .delete-zone.active {
@@ -87,7 +89,7 @@ template.innerHTML = `
     }
   </style>
   <div class="stop-container"></div>
-  <div class="delete-zone">Drop here to delete</div>
+  <div class="delete-zone">Drop to delete</div>
 `;
 
 export class GradientStops extends HTMLElement {
@@ -98,6 +100,7 @@ export class GradientStops extends HTMLElement {
   #isVertical = false;
   #width = null;
   #height = null;
+  #deleteDragDistance = 10;
 
   constructor() {
     super();
@@ -212,7 +215,7 @@ export class GradientStops extends HTMLElement {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('width', '20');
     svg.setAttribute('height', '25');
-    svg.setAttribute('viewBox', '0 0 20 25');
+    svg.setAttribute('viewBox', '0 0 20 20');
 
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     path.classList.add('triangle');
@@ -221,9 +224,11 @@ export class GradientStops extends HTMLElement {
     // For horizontal mode, point up (towards the gradient)
     if (this.#isVertical) {
       // Triangle pointing left
+      // WARNING: changing shape of the icon requires updating SVG above: svg.setAttribute('viewBox', '0 0 20 20');
       path.setAttribute('d', 'M 20 10 L 5 0 L 5 5 L 0 10 L 5 15 L 5 20 Z');
     } else {
       // Triangle pointing up (original)
+      // WARNING: changing shape of the icon requires updating SVG above: svg.setAttribute('viewBox', '0 0 20 20');
       path.setAttribute('d', 'M 10 0 L 0 15 L 5 15 L 10 20 L 15 15 L 20 15 Z');
     }
 
@@ -304,7 +309,7 @@ export class GradientStops extends HTMLElement {
     }
 
     const onDragMove = (moveEvent) => {
-      let deltaPercentage, deleteCheck;
+      let deltaPercentage;
 
       if (this.#isVertical) {
         // Vertical: invert the delta because 0% is at bottom
@@ -316,8 +321,6 @@ export class GradientStops extends HTMLElement {
         element.setAttribute('data-percentage', newPercentage);
         this.#colorStops[index].percentage = newPercentage;
 
-        // Check if dragged far to the right for deletion
-        deleteCheck = moveEvent.clientX - rect.right;
       } else {
         // Horizontal
         const delta = moveEvent.clientX - startPos;
@@ -328,12 +331,9 @@ export class GradientStops extends HTMLElement {
         element.setAttribute('data-percentage', newPercentage);
         this.#colorStops[index].percentage = newPercentage;
 
-        // Check if dragged far below for deletion
-        deleteCheck = moveEvent.clientY - rect.bottom;
       }
-
-      // Show delete zone if dragged far enough
-      if (deleteCheck > 30 && this.#colorStops.length > 2) {
+      console.log(rect.left, moveEvent.clientX, rect.left - moveEvent.clientX)
+      if (this.shouldDragDelete(this.#isVertical?rect.left - moveEvent.clientX:moveEvent.clientY - rect.bottom)) {
         this.deleteZone.classList.add('active');
       } else {
         this.deleteZone.classList.remove('active');
@@ -349,20 +349,13 @@ export class GradientStops extends HTMLElement {
 
       // Check if should delete
       const rect = this.getBoundingClientRect();
-      let deleteCheck;
-
-      if (this.#isVertical) {
-        deleteCheck = endEvent.clientX - rect.right;
-      } else {
-        deleteCheck = endEvent.clientY - rect.bottom;
-      }
-
-      if (deleteCheck > 30 && this.#colorStops.length > 2) {
+      if (this.shouldDragDelete(this.#isVertical?rect.left - endEvent.clientX:endEvent.clientY - rect.bottom)) {
         this.#colorStops.splice(index, 1);
         this.#selectedIndex = -1; // Clear selection
         this.renderColorStops();
         this.emitChangeEvent();
       }
+
 
       this.#draggedStop = null;
       this.#draggedIndex = -1;
@@ -405,6 +398,13 @@ export class GradientStops extends HTMLElement {
     this.renderColorStops();
     this.selectStop(newIndex);
     this.emitChangeEvent();
+  }
+
+  shouldDragDelete(distance){
+    console.log(distance)
+    const moreThanTwoStops = this.#colorStops.length > 2;
+    const reachedDeleteZone = distance > this.#deleteDragDistance;
+    if (moreThanTwoStops && reachedDeleteZone) return true;
   }
 
   interpolateColor(percentage) {

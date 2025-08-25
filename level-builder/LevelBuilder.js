@@ -4,8 +4,8 @@ template.innerHTML = `
   <style>
     :host {
       display: block;
-      padding: 20px;
-      border: 1px solid var(--l3-br);
+      xx-padding: 20px;
+      xx-border: 1px solid var(--l3-br);
       border-radius: 8px;
       // max-width: 600px;
       background: var(--l3-bg);
@@ -13,9 +13,6 @@ template.innerHTML = `
     }
 
     .controls {
-      display: flex;
-      gap: 15px;
-      align-items: center;
       margin-bottom: 20px;
       padding: 15px;
       background: var(--l4-bg);
@@ -24,9 +21,6 @@ template.innerHTML = `
     }
 
     .color-group {
-      display: flex;
-      align-items: center;
-      gap: 10px;
     }
 
     label {
@@ -97,7 +91,7 @@ template.innerHTML = `
       margin-bottom: 4px;
 
       display: grid;
-      grid-template-columns: 64px 1fr 1fr; /* Create three columns */
+      grid-template-columns: 25px 1fr ; /* Create three columns */
       gap: var(1rem); /* Set gap between items */
     }
 
@@ -125,6 +119,7 @@ template.innerHTML = `
       background: var(--l4-bg);
       border-radius: 4px;
       font-size: 14px;
+      margin-bottom: 4px;
     }
 
     .stop-info.no-selection {
@@ -135,36 +130,38 @@ template.innerHTML = `
 
 
 
-  <div class="stop-info no-selection">
-    <span id="stopInfoText">Click on a stop to select it, or double-click on the gradient to add a new stop</span>
-  </div>
-
-  <div class="gradient-container">
-
-    <gradient-stops vertical width="64px" height="300px"></gradient-stops>
-    <gradient-bar vertical width="64px" height="300px"></gradient-bar>
-
-
     <div class="controls">
+
       <div class="color-group">
-        <label for="colorInput">Color:</label>
+        <!-- <label for="colorInput">Color:</label> -->
         <input type="color" id="colorInput" disabled>
       </div>
+
       <div class="color-group">
-        <label for="positionInput">Position:</label>
+        <!-- <label for="positionInput">Position:</label> -->
         <input type="number" id="positionInput" min="0" max="100" step="0.1" disabled>
         <span>%</span>
       </div>
-      <button id="addStop">Add Stop</button>
-      <button id="deleteStop" class="delete" disabled>Delete Stop</button>
+
     </div>
 
-
+  <div class="gradient-container">
+    <gradient-stops vertical width="25px" height="300px"></gradient-stops>
+    <gradient-bar vertical width="64px" height="300px"></gradient-bar>
   </div>
 
+  <div class="controls">
+    <button id="addStop">Add Stop</button>
+    <button id="deleteStop" class="delete" disabled>Delete Stop</button>
+  </div>
+
+  <div class="stop-info no-selection">
+    <span id="stopInfoText"></span>
+  </div>
   <div class="info">
-    💡 <strong>Tips:</strong> Click gradient bar to sample colors • Double-click to add stops • Right-click stops to change color • Drag stops to reposition • Drag down to delete
+    <strong></strong>
   </div>
+
 `;
 
 export class LevelBuilder extends HTMLElement {
@@ -187,13 +184,12 @@ export class LevelBuilder extends HTMLElement {
     this.gradientBarComponent = shadow.querySelector('gradient-bar');
 
     // Initialize with default gradient
-    this.#colorStops = [
-      { percentage: 0, color: '#ff0000' },
-      { percentage: 50, color: '#00ff00' },
-      { percentage: 100, color: '#0000ff' }
-    ];
+    // this.#colorStops = [
+    //   { percentage: 0, color: '#03141C' },
+    //   { percentage: 100, color: '#083145' }
+    // ];
 
-    this.initializeComponents();
+    // this.initializeComponents();
     this.setupEventListeners();
   }
 
@@ -385,7 +381,7 @@ export class LevelBuilder extends HTMLElement {
       }
     }
 
-    return '#888888';
+    return sorted[sorted.length-1].color;
   }
 
   interpolateColors(color1, color2, ratio) {
@@ -421,7 +417,7 @@ export class LevelBuilder extends HTMLElement {
 
   ensureHexColor(color) {
     if (color.startsWith('#')) return color;
-    if (color.startsWith('rgb')) return this.rgbToHex(color);
+    if (color.startsWith('rgb')) return this.rgbStrToHex(color);
     return color;
   }
 
@@ -442,6 +438,30 @@ export class LevelBuilder extends HTMLElement {
     const stops = sorted.map(stop => `${stop.color} ${stop.percentage}%`).join(', ');
     return `linear-gradient(90deg, ${stops})`;
   }
+
+
+
+  static get observedAttributes() {
+    return ["gradient-stops"];
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === "gradient-stops" && newValue) {
+      try {
+        console.log(newValue);
+        this.#colorStops = JSON.parse(newValue);
+        this.initializeComponents();
+      } catch (e) {
+        console.error("Invalid gradient-stops JSON:", e);
+      }
+    }
+  }
+
+
+    // this.initializeComponents();
+
+
+
 }
 
 // Register the custom element
