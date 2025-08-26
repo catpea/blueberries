@@ -1,13 +1,18 @@
 <!doctype html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en"   color-mode="dark">
   <head>
+    <style>
+    --debug-show-component-names: inline;
+    </style>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Demo</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👾</text></svg>" />
 
-    <link href="theme.css" rel="stylesheet"> <!-- theme comes first -->
     <link href="reset.css" rel="stylesheet">
+    <link href="controls.css" rel="stylesheet">
+    <link href="theme.css" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
 
     <script type="importmap">
       {
@@ -90,18 +95,23 @@
       display: grid;
       width: 100%;
       grid-template-areas:
-        "head head"
-        "nav  main"
-        "foot foot";
-      grid-template-rows: 50px 1fr 6rem;
-      grid-template-columns: 150px 1fr;
+        "head"
+        "main"
+        "foot";
+      grid-template-rows: auto;
+      grid-template-columns: 1fr;
     }
 
     #page > header {
+
       grid-area: head;
+
       background-color: var(--l4-bg);
       border-top-left-radius: var(--rounded);
       border-top-right-radius: var(--rounded);
+
+      padding: 4px;
+
       [data-offcanvas-toggle]{
         font-size: 2rem;
       }
@@ -179,13 +189,7 @@
 
 
       </header>
-     	<nav>
-      		<ul class="nav">
-       			<li><a href="#" class="active">Home</a></li>
-       			<li><a href="#">About</a></li>
-       			<li><a href="#">Contact</a></li>
-      		</ul>
-       	</nav>
+
 
 
       <main>

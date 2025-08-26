@@ -1,7 +1,12 @@
+import { DisposableEventListener } from '../util/DisposableEventListener.js';
+
+
 // we must use the template element as it only requires: shadow.appendChild(template.content.cloneNode(true));
 const template = document.createElement("template");
 template.innerHTML = `
-
+  <link href="../reset.css" rel="stylesheet">
+  <link href="../controls.css" rel="stylesheet">
+  <link href="../developer.css" rel="stylesheet">
   <style>
     :host {
       --table-bg-color: var(--l3-bg); /* Background color of the table */
@@ -63,23 +68,26 @@ template.innerHTML = `
     */
 
   </style>
-
-  <table class="table">
+  <table class="table debug-message debug-visible"  data-debug="ThemeGrid extends HTMLElement">
     <thead>
       <tr id="tableHeader">
 
       </tr>
     </thead>
+
     <tbody id="tableBody">
 
     </tbody>
+
   </table>
 `;
 
 export class ThemeGrid extends HTMLElement {
   #colorStops = []; // set by external web-component
+  #disposables = new Set();
 
   #rows = [
+
     { id: "level9" },
     { id: "level8" },
     { id: "level7" },
@@ -90,18 +98,21 @@ export class ThemeGrid extends HTMLElement {
     { id: "level2" },
     { id: "level1" },
     { id: "level0" },
+
   ];
 
   // level5,  level4,  level3,  level2,  level1
   // caption,  backdrop,  background,  raised,  foreground,  text,  link,  info,  success,  warning,  danger,  muted,
   #columns = [
-    { id: "caption", value: 0.7 },
-    { id: "backdrop", value: 0.2 },
+
+    { id: "caption",    value: 0.7 },
+    { id: "backdrop",   value: 0.2 },
     { id: "background", value: 0.6 },
-    { id: "raised", value: 0.1 },
+    { id: "raised",     value: 0.1 },
     { id: "foreground", value: 0.5 },
-    { id: "text", value: 0.4 },
-    { id: "link", value: 0.9 },
+    { id: "text",       value: 0.4 },
+    { id: "link",       value: 0.9 },
+
     // {id: 'info', value:0.8},
     // {id: 'success', value:0.9},
     // {id: 'warning', value:0.10},
@@ -117,16 +128,20 @@ export class ThemeGrid extends HTMLElement {
     this.tableHeader = shadow.querySelector("#tableHeader");
     this.tableBody = shadow.querySelector("#tableBody");
 
-    // this.initializeTable();
+    this.initializeTable();
   }
 
   initializeTable() {
     this.tableHeader.textContent = "";
-    this.tableBody.textContent = "";
-
     this.renderTableHeaders();
     this.renderVarianceSteppers();
+  }
+
+  updateTable(){
+
+    this.tableBody.querySelectorAll('tr.color-row').forEach(row => row.remove());
     this.renderTableRows();
+
   }
 
   renderTableHeaders() {
@@ -151,16 +166,24 @@ export class ThemeGrid extends HTMLElement {
     th.textContent = "variance";
     tr.appendChild(th);
 
-    for (const [index, { id, value }] of this.#columns.entries()) {
+    for (const entry of this.#columns ) {
       const td = document.createElement("td");
 
-      const variance = document.createElement("input");
-      variance.setAttribute("type", "number");
-      variance.setAttribute("min", "0");
-      variance.setAttribute("max", "1");
-      variance.setAttribute("step", "0.01");
-      variance.setAttribute("value", value);
-      td.appendChild(variance);
+      const varianceInput = document.createElement("input");
+      varianceInput.setAttribute("type", "number");
+      varianceInput.setAttribute("min", "0");
+      varianceInput.setAttribute("max", "1");
+      varianceInput.setAttribute("step", "0.01");
+      varianceInput.setAttribute("value", entry.value);
+      td.appendChild(varianceInput);
+
+      const eventHandler = (e)=> {
+        entry.value = e.target.value;
+        this.updateTable();
+      };
+
+      const disposableListener = new DisposableEventListener(varianceInput, 'input', eventHandler);
+      this.#disposables.add(disposableListener)
 
       tr.appendChild(td);
     }
@@ -171,6 +194,7 @@ export class ThemeGrid extends HTMLElement {
   renderTableRows() {
     for (const [rowIndex, { id: rowId }] of this.#rows.entries()) {
       const tr = document.createElement("tr");
+      tr.setAttribute('class', 'color-row');
 
       //ROW HEADER
       const th = document.createElement("th");
@@ -217,7 +241,7 @@ export class ThemeGrid extends HTMLElement {
       try {
         console.log(newValue);
         this.#colorStops = JSON.parse(newValue);
-        this.initializeTable();
+        this.updateTable();
       } catch (e) {
         console.error("Invalid gradient-stops JSON:", e);
       }
