@@ -27,10 +27,16 @@
   "devDependencies": {},
   "localDependencies": {
     "../ladybits": "^2.0.0",
-    "../heebiejeebies": "^1.0.5"
+    "../heebiejeebies": "^1.0.5",
+    "../mlue/": "^1.0.7",
+    "../sinusoid/": "^1.0.1",
+    "../epidermis": "^1.0.1"
   },
   "dependencies": {
     "ladybits": "^2.0.0",
-    "heebiejeebies": "^1.0.5"
+    "heebiejeebies": "^1.0.5",
+    "mlue": "^1.0.7",
+    "sinusoid": "^1.0.1",
+    "epidermis": "^1.0.1"
   }
 }

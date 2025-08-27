@@ -332,7 +332,7 @@ export class GradientStops extends HTMLElement {
         this.#colorStops[index].percentage = newPercentage;
 
       }
-      console.log(rect.left, moveEvent.clientX, rect.left - moveEvent.clientX)
+      // console.log(rect.left, moveEvent.clientX, rect.left - moveEvent.clientX)
       if (this.shouldDragDelete(this.#isVertical?rect.left - moveEvent.clientX:moveEvent.clientY - rect.bottom)) {
         this.deleteZone.classList.add('active');
       } else {
@@ -401,7 +401,7 @@ export class GradientStops extends HTMLElement {
   }
 
   shouldDragDelete(distance){
-    console.log(distance)
+    // console.log(distance)
     const moreThanTwoStops = this.#colorStops.length > 2;
     const reachedDeleteZone = distance > this.#deleteDragDistance;
     if (moreThanTwoStops && reachedDeleteZone) return true;

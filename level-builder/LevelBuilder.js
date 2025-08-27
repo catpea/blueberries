@@ -1,6 +1,9 @@
 // we must use the template element as it only requires: shadow.appendChild(template.content.cloneNode(true));
 const template = document.createElement('template');
 template.innerHTML = `
+  <link href="https://cdn.jsdelivr.net/npm/epidermis/reset.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/epidermis/controls.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/epidermis/developer.css" rel="stylesheet">
   <style>
     :host {
       display: block;
@@ -130,7 +133,7 @@ template.innerHTML = `
 
 
 
-    <div class="controls">
+    <div class="controls debug-message debug-visible"  data-debug="level-builder">
 
       <div class="color-group">
         <!-- <label for="colorInput">Color:</label> -->

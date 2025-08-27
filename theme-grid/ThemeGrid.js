@@ -1,12 +1,17 @@
-import { DisposableEventListener } from '../util/DisposableEventListener.js';
+import { Signal, DisposableSinusoidalListener } from "#sinusoid";
 
+import { DisposableEventListener } from "../util/DisposableEventListener.js";
+import { GradientCalculator } from "../util/GradientCalculator.js";
+import { DisposableArrayListener, ReactiveArray, detectSetChanges, detectOrderChanges } from "../util/ReactiveArray.js";
+
+const gradientCalculator = new GradientCalculator();
 
 // we must use the template element as it only requires: shadow.appendChild(template.content.cloneNode(true));
 const template = document.createElement("template");
 template.innerHTML = `
-  <link href="../reset.css" rel="stylesheet">
-  <link href="../controls.css" rel="stylesheet">
-  <link href="../developer.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/epidermis/reset.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/epidermis/controls.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/epidermis/developer.css" rel="stylesheet">
   <style>
     :host {
       --table-bg-color: var(--l3-bg); /* Background color of the table */
@@ -68,57 +73,60 @@ template.innerHTML = `
     */
 
   </style>
-  <table class="table debug-message debug-visible"  data-debug="ThemeGrid extends HTMLElement">
+  <table class="table debug-message debug-visible"  data-debug="theme-grid">
     <thead>
       <tr id="tableHeader">
-
       </tr>
     </thead>
 
     <tbody id="tableBody">
-
+      <tr id="varianceAdjust"></tr>
     </tbody>
 
   </table>
 `;
 
 export class ThemeGrid extends HTMLElement {
-  #colorStops = []; // set by external web-component
-  #disposables = new Set();
+  #colorStops = new ReactiveArray(); // set by external web-component
 
-  #rows = [
+  #disposables = new Map();
+  addDisposable(disposable, key = "this") {
+    if (typeof disposable?.dispose !== "function") throw new TypeError("This is for SomeDisposable.dispose() only.");
+    if (!this.#disposables.has(key)) this.#disposables.set(key, new Set());
+    this.#disposables.get(key).add(disposable);
+  }
+  hasDisposable(key = "this") {
+    const set = this.#disposables.get(key);
+    return !!(set && set.size > 0);
+  }
+  disposeDisposables(key = "this") {
+    const set = this.#disposables.get(key);
+    if (!set || set.size === 0) return;
+    const disposables = Array.from(set);
+    set.clear();
+    this.#disposables.delete(key);
+    disposables.map((o) => o.dispose());
+  }
 
-    { id: "level9" },
-    { id: "level8" },
-    { id: "level7" },
-    { id: "level6" },
-    { id: "level5" },
-    { id: "level4" },
-    { id: "level3" },
-    { id: "level2" },
-    { id: "level1" },
-    { id: "level0" },
-
-  ];
+  #rows = new ReactiveArray({ id: "level9" }, { id: "level8" }, { id: "level7" }, { id: "level6" }, { id: "level5" }, { id: "level4" }, { id: "level3" }, { id: "level2" }, { id: "level1" }, { id: "level0" });
 
   // level5,  level4,  level3,  level2,  level1
   // caption,  backdrop,  background,  raised,  foreground,  text,  link,  info,  success,  warning,  danger,  muted,
-  #columns = [
+  #columns = new ReactiveArray(
+    { id: "caption", variance: new Signal(0.7) },
+    { id: "backdrop", variance: new Signal(0.2) },
+    { id: "background", variance: new Signal(0.6) },
+    { id: "raised", variance: new Signal(0.1) },
+    { id: "foreground", variance: new Signal(0.5) },
+    { id: "text", variance: new Signal(0.4) },
+    { id: "link", variance: new Signal(0.9) },
 
-    { id: "caption",    value: 0.7 },
-    { id: "backdrop",   value: 0.2 },
-    { id: "background", value: 0.6 },
-    { id: "raised",     value: 0.1 },
-    { id: "foreground", value: 0.5 },
-    { id: "text",       value: 0.4 },
-    { id: "link",       value: 0.9 },
-
-    // {id: 'info', value:0.8},
-    // {id: 'success', value:0.9},
-    // {id: 'warning', value:0.10},
-    // {id: 'danger', value:0.11},
-    // {id: 'muted', value:0.12},
-  ];
+    // {id: 'info', value:new Signal(0.8)},
+    // {id: 'success', value:new Signal(0.9)},
+    // {id: 'warning', value:new Signal(0.10)},
+    // {id: 'danger', value:new Signal(0.11)},
+    // {id: 'muted', value:new Signal(0.12)},
+  );
 
   constructor() {
     super();
@@ -127,29 +135,25 @@ export class ThemeGrid extends HTMLElement {
 
     this.tableHeader = shadow.querySelector("#tableHeader");
     this.tableBody = shadow.querySelector("#tableBody");
+    this.varianceAdjust = shadow.querySelector("#varianceAdjust");
 
     this.initializeTable();
   }
 
   initializeTable() {
-    this.tableHeader.textContent = "";
-    this.renderTableHeaders();
-    this.renderVarianceSteppers();
-  }
+    this.addDisposable(new DisposableArrayListener(this.#columns, "change", (e) => this.renderTableHeaders()));
+    this.addDisposable(new DisposableArrayListener(this.#columns, "change", (e) => this.renderVarianceAdjust()));
+    this.addDisposable(new DisposableArrayListener(this.#colorStops, "change", (e) => this.renderTableRows()));
 
-  updateTable(){
-
-    this.tableBody.querySelectorAll('tr.color-row').forEach(row => row.remove());
-    this.renderTableRows();
+    this.#colorStops.rev.subscribe(([rev])=>console.info(`this.#colorStops revision is now at ${rev}`))
 
   }
 
   renderTableHeaders() {
-    const th = document.createElement("th");
+    this.tableHeader.textContent = "";
+    const th = document.createElement("th"); // ID/blank Header (never changes)
     th.setAttribute("scope", "col");
-    th.textContent = "id";
     this.tableHeader.appendChild(th);
-
     for (const { id } of this.#columns) {
       const th = document.createElement("th");
       th.setAttribute("scope", "col");
@@ -158,15 +162,15 @@ export class ThemeGrid extends HTMLElement {
     }
   }
 
-  renderVarianceSteppers() {
-    const tr = document.createElement("tr");
+  renderVarianceAdjust() {
+    this.varianceAdjust.textContent = "";
 
     const th = document.createElement("th");
     th.setAttribute("scope", "row");
     th.textContent = "variance";
-    tr.appendChild(th);
+    this.varianceAdjust.appendChild(th);
 
-    for (const entry of this.#columns ) {
+    for (const entry of this.#columns) {
       const td = document.createElement("td");
 
       const varianceInput = document.createElement("input");
@@ -174,27 +178,28 @@ export class ThemeGrid extends HTMLElement {
       varianceInput.setAttribute("min", "0");
       varianceInput.setAttribute("max", "1");
       varianceInput.setAttribute("step", "0.01");
-      varianceInput.setAttribute("value", entry.value);
+      varianceInput.setAttribute("value", entry.variance.value);
       td.appendChild(varianceInput);
 
-      const eventHandler = (e)=> {
-        entry.value = e.target.value;
-        this.updateTable();
+      const eventHandler = (e) => {
+        entry.variance.value = e.target.value;
       };
 
-      const disposableListener = new DisposableEventListener(varianceInput, 'input', eventHandler);
-      this.#disposables.add(disposableListener)
+      const disposableId = `variance-input-${entry.id}`;
+      const disposableListener = new DisposableEventListener(varianceInput, "input", eventHandler);
+      this.disposeDisposables(disposableId);
+      this.addDisposable(disposableListener, disposableId);
 
-      tr.appendChild(td);
+      this.varianceAdjust.appendChild(td);
     }
-
-    this.tableBody.appendChild(tr);
   }
 
   renderTableRows() {
+    this.tableBody.querySelectorAll("tr.color-row").forEach((row) => row.remove());
+
     for (const [rowIndex, { id: rowId }] of this.#rows.entries()) {
       const tr = document.createElement("tr");
-      tr.setAttribute('class', 'color-row');
+      tr.setAttribute("class", "color-row");
 
       //ROW HEADER
       const th = document.createElement("th");
@@ -204,22 +209,22 @@ export class ThemeGrid extends HTMLElement {
       //ROW HEADER
 
       for (const [colIndex, { id: colId }] of this.#columns.entries()) {
-        const colorValue = this.#columns[colIndex].value;
-        const fraction = (rowIndex + 1) / this.#rows.length;
-        const percentage = 100 * fraction;
-
-        const baseColor = this.getColorAtPercentage(100-percentage);
-
-        const localColor = this.#colorTransformer(baseColor, colorValue);
-
         const td = document.createElement("td");
-        td.style.background = localColor;
-
         td.classList.add(`${rowId}-${colId}`);
-        // td.textContent = `${rowId}-${colId}`;
-        const inkWell = document.createElement("input");
-        inkWell.setAttribute("type", "color");
-        // td.appendChild(inkWell);
+
+        const varianceSignal = this.#columns[colIndex].variance;
+
+        const varianceSignalUpdateHandler = (v) => {
+          const colorValue = v;
+          const fraction = (rowIndex + 1) / this.#rows.length;
+          const percentage = 100 * fraction;
+          const baseColor = gradientCalculator.getColorAtPercentage(this.#colorStops, 100 - percentage);
+          const localColor = this.#colorTransformer(baseColor, colorValue);
+          td.style.background = localColor;
+        };
+        const disposableListener = new DisposableSinusoidalListener(varianceSignal, varianceSignalUpdateHandler);
+        this.disposeDisposables(`${rowId}-${colId}`);
+        this.addDisposable(disposableListener, `${rowId}-${colId}`);
 
         tr.appendChild(td);
       }
@@ -239,9 +244,7 @@ export class ThemeGrid extends HTMLElement {
   attributeChangedCallback(name, oldValue, newValue) {
     if (name === "gradient-stops" && newValue) {
       try {
-        console.log(newValue);
-        this.#colorStops = JSON.parse(newValue);
-        this.updateTable();
+        this.#colorStops.splice(0, this.#colorStops.length, ...JSON.parse(newValue));
       } catch (e) {
         console.error("Invalid gradient-stops JSON:", e);
       }
@@ -252,208 +255,9 @@ export class ThemeGrid extends HTMLElement {
     this.dispatchEvent(new CustomEvent("something", { bubbles: true }));
   }
 
-  #colorTransformer(baseColor, colorValue) {
-    console.log({baseColor, colorValue})
-    const hslColor = this.hexToHsl(baseColor);
-    const shadedHsl = this.toShade(hslColor, 1-colorValue)
-    return this.hslToHex(shadedHsl);
-  }
-
-  hexToHsl(hex){
-    const rgb = this.hexToRgb(hex);
-    const hsl = this.rgbToHsl(rgb);
-    return hsl;
-  }
-
-  hslToHex(hsl){
-    const rgb = this.hslToRgb(hsl);
-    const hex = this.rgbToHex(rgb);
-    return hex;
-  }
-
-
-
-  toShade({h, s, l}, shadeFactor = 0.3) {
-    // shadeFactor: 0 = no change, 1 = completely dark
-    // Clamp shadeFactor between 0 and 1
-    shadeFactor = Math.max(0, Math.min(1, shadeFactor));
-
-    // Primary effect: reduce lightness
-    const newL = l * (1 - shadeFactor);
-
-    // Secondary effect: slightly reduce saturation in deeper shadows
-    // Saturation reduction is less pronounced than lightness reduction
-    const saturationReduction = shadeFactor * 0.2; // 20% of the shade factor
-    const newS = s * (1 - saturationReduction);
-
-    // Tertiary effect: very subtle hue shift toward blue (cooler shadows)
-    // This is optional and very subtle - only noticeable in deep shadows
-    let newH = h;
-    if (shadeFactor > 0.5) {
-      // Shift slightly toward blue (240°) for deeper shadows
-      const hueShiftAmount = (shadeFactor - 0.5) * 10; // Max 5° shift
-      newH = h + hueShiftAmount;
-      // Wrap hue around 360°
-      if (newH >= 360) newH -= 360;
-      if (newH < 0) newH += 360;
-    }
-
-    return {
-      h: Math.round(newH),
-      s: Math.round(Math.max(0, Math.min(100, newS))),
-      l: Math.round(Math.max(0, Math.min(100, newL))),
-    };
-  }
-
-  getColorAtPercentage(percentage) {
-
-    if(!this.#colorStops.length) return "#000";
-
-    // Prepare
-    const sorted = [...this.#colorStops].sort((a, b) => a.percentage - b.percentage);
-
-    // If percentate is less than the percentage of the first color stop, return that color-stops value
-    if( percentage <= sorted[0].percentage ) return sorted[0].color;
-
-    // if percentate is beyond the last color, return that last colors value;
-    if( percentage >= sorted[sorted.length-1].percentage ) return sorted[sorted.length-1].color;
-
-
-    // Simple interpolation for new stops
-    for (let i = 0; i < sorted.length - 1; i++) {
-
-      // if percenatare is between the two
-      if (sorted[i].percentage <= percentage && sorted[i + 1].percentage >= percentage) {
-        const ratio = (percentage - sorted[i].percentage) / (sorted[i + 1].percentage - sorted[i].percentage);
-        return this.interpolateColors(sorted[i].color, sorted[i + 1].color, ratio);
-      }
-
-    }
-
-  }
-
-  interpolateColors(color1, color2, ratio) {
-    const c1 = this.hexToRgb(this.ensureHexColor(color1));
-    const c2 = this.hexToRgb(this.ensureHexColor(color2));
-
-    const r = Math.round(c1.r + (c2.r - c1.r) * ratio);
-    const g = Math.round(c1.g + (c2.g - c1.g) * ratio);
-    const b = Math.round(c1.b + (c2.b - c1.b) * ratio);
-
-    return this.rgbStrToHex(`rgb(${r}, ${g}, ${b})`);
-  }
-
-  rgbToHex({r, g, b}) {
-    const rr = r.toString(16).padStart(2, "0");
-    const gg = g.toString(16).padStart(2, "0");
-    const bb = b.toString(16).padStart(2, "0");
-    return `#${rr}${gg}${bb}`;
-  }
-  rgbStrToHex(rgb) {
-
-
-    const match = rgb.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
-    if (!match) return "#000000";
-
-    const r = parseInt(match[1]).toString(16).padStart(2, "0");
-    const g = parseInt(match[2]).toString(16).padStart(2, "0");
-    const b = parseInt(match[3]).toString(16).padStart(2, "0");
-
-    return `#${r}${g}${b}`;
-  }
-  hexToRgb(hex) {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result
-      ? {
-          r: parseInt(result[1], 16),
-          g: parseInt(result[2], 16),
-          b: parseInt(result[3], 16),
-        }
-      : { r: 0, g: 0, b: 0 };
-  }
-
-  // Input: { r: 0-255, g: 0-255, b: 0-255 }
-  // Output: { h: 0-360, s: 0-100, l: 0-100 }
-  rgbToHsl({ r, g, b }) {
-    // normalize to [0,1]
-    const rn = r / 255;
-    const gn = g / 255;
-    const bn = b / 255;
-
-    const max = Math.max(rn, gn, bn);
-    const min = Math.min(rn, gn, bn);
-    const delta = max - min;
-
-    // Lightness
-    let l = (max + min) / 2;
-
-    // Saturation
-    let s = 0;
-    if (delta !== 0) {
-      s = delta / (1 - Math.abs(2 * l - 1));
-    }
-
-    // Hue
-    let h = 0;
-    if (delta !== 0) {
-      if (max === rn) {
-        h = ((gn - bn) / delta) % 6;
-      } else if (max === gn) {
-        h = (bn - rn) / delta + 2;
-      } else {
-        h = (rn - gn) / delta + 4;
-      }
-      h = h * 60;
-      if (h < 0) h += 360;
-    }
-
-    // convert s and l to percentages
-    return {
-      h: Math.round(h * 100) / 100, // optional: round to 2 decimals
-      s: Math.round(s * 10000) / 100, // s as percentage with 2 decimals
-      l: Math.round(l * 10000) / 100, // l as percentage with 2 decimals
-    };
-  }
-
-  hslToRgb({ h, s, l }) {
-    // h: 0-360, s & l: 0-100 (percent)
-    const H = ((h % 360) + 360) % 360; // normalize
-    const S = Math.max(0, Math.min(100, s)) / 100;
-    const L = Math.max(0, Math.min(100, l)) / 100;
-
-    if (S === 0) {
-      // achromatic (gray)
-      const val = Math.round(L * 255);
-      return { r: val, g: val, b: val };
-    }
-
-    const q = L < 0.5 ? L * (1 + S) : L + S - L * S;
-    const p = 2 * L - q;
-
-    const hue2rgb = (p, q, t) => {
-      if (t < 0) t += 1;
-      if (t > 1) t -= 1;
-      if (t < 1 / 6) return p + (q - p) * 6 * t;
-      if (t < 1 / 2) return q;
-      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
-      return p;
-    };
-
-    const hk = H / 360;
-    const r = hue2rgb(p, q, hk + 1 / 3);
-    const g = hue2rgb(p, q, hk);
-    const b = hue2rgb(p, q, hk - 1 / 3);
-
-    return {
-      r: Math.round(r * 255),
-      g: Math.round(g * 255),
-      b: Math.round(b * 255),
-    };
-  }
-
-  ensureHexColor(color) {
-    if (color.startsWith("#")) return color;
-    if (color.startsWith("rgb")) return this.rgbStrToHex(color);
-    return color;
+  #colorTransformer(baseColor, colorVariant) {
+    const hslColor = gradientCalculator.hexToHsl(baseColor);
+    const shadedHsl = gradientCalculator.toShade(hslColor, 1 - colorVariant);
+    return gradientCalculator.hslToHex(shadedHsl);
   }
 }
