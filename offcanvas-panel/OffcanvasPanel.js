@@ -1,5 +1,6 @@
 // we must use the template element as it only requires: shadow.appendChild(template.content.cloneNode(true));
 const template = document.createElement('template');
+
 // we use html`` as it enables syntax higlighiting in zed editor
 template.innerHTML = html`
   <style>
@@ -27,6 +28,7 @@ template.innerHTML = html`
       justify-content: space-between;
 
     }
+
     :host([open]) {
       transform: translateX(0);
     }

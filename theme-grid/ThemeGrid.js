@@ -203,22 +203,22 @@ return Math.pow(level / totalLevels, 1.2);
 const t = level / (totalLevels - 1);
 return Math.pow(t, 0.8); // Slows down the progression toward the end
 */
-  calculateColor(level, variance){
-    const ratio =  (level + 0.5) / this.#levels.length;
+  calculateColor(levels, level, variance, inverse){
+    const ratio =  (level + 0.5) / levels.length;
     const percentage = 100 * ratio;
-    const baseColor = gradientCalculator.getColorAtPercentage(this.#colorStops, 100 - percentage);
+    const baseColor = gradientCalculator.getColorAtPercentage(this.#colorStops, inverse?percentage:100-percentage);
     const transformedByVariance = this.#colorTransformer(baseColor, variance);
     return transformedByVariance;
   }
 
-  generateLevel(level=0){
-    if(!this.#levels[level]) return '';
-    const options = this.#levels[level];
+  generateLevel(levels, level=0){
+    if(!levels[level]) return '';
+    const options = levels[level];
 
     return `
-      .up { /* level: ${options.id} */
-        ${this.#variables.map(variable=>`--${variable.id}: ${this.calculateColor(level, variable.variance)};`).join('\n')}
-        ${this.generateLevel(level + 1)}
+      .up { /* level: ${options.id} ${(level + 0.5) / levels.length} */
+        ${this.#variables.map(variable=>`--${variable.id}: ${this.calculateColor(levels, level, variable.variance, true)};`).join('\n')}
+        ${this.generateLevel(levels, level + 1)}
       }
     `;
   }
@@ -244,7 +244,7 @@ return Math.pow(t, 0.8); // Slows down the progression toward the end
       "indent_empty_lines": false
     };
 
-    return css_beautify(this.generateLevel(0), options);
+    return css_beautify(this.generateLevel(this.#levels.toReversed() , 0), options);
   }
 
   renderTableHeaders() {
@@ -313,7 +313,7 @@ return Math.pow(t, 0.8); // Slows down the progression toward the end
         const varianceSignal = this.#variables[colIndex].variance;
 
         const varianceSignalUpdateHandler = variance => {
-          td.style.background =  this.calculateColor(rowIndex, variance)
+          td.style.background =  this.calculateColor(this.#levels, rowIndex, variance)
         };
         const disposableListener = new DisposableSinusoidalListener(varianceSignal, varianceSignalUpdateHandler);
         this.disposeDisposables(`${rowId}-${colId}`);

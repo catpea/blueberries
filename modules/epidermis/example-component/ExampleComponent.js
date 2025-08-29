@@ -1,4 +1,5 @@
 const template = document.createElement("template");
+
 template.innerHTML = `
 
   <link href="../reset.css" rel="stylesheet">
