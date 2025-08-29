@@ -87,6 +87,7 @@ template.innerHTML = `
 `;
 
 export class ThemeGrid extends HTMLElement {
+  #cssCode = new Signal('body {}');
   #colorStops = new ReactiveArray(); // set by external web-component
 
   #disposables = new Map();
@@ -108,14 +109,26 @@ export class ThemeGrid extends HTMLElement {
     disposables.map((o) => o.dispose());
   }
 
-  #rows = new ReactiveArray({ id: "level9" }, { id: "level8" }, { id: "level7" }, { id: "level6" }, { id: "level5" }, { id: "level4" }, { id: "level3" }, { id: "level2" }, { id: "level1" }, { id: "level0" });
+  #levels = new ReactiveArray(
+    // { id: "level0" },
+    { id: "level1" },
+    { id: "level2" },
+    { id: "level3" },
+    { id: "level4" },
+    { id: "level5" },
+    // { id: "level6" },
+    // { id: "level7" },
+    // { id: "level8" },
+    // { id: "level9" }
+  );
 
   // level5,  level4,  level3,  level2,  level1
   // caption,  backdrop,  background,  raised,  foreground,  text,  link,  info,  success,  warning,  danger,  muted,
-  #columns = new ReactiveArray(
+  #variables = new ReactiveArray(
     { id: "caption", variance: new Signal(0.7) },
     { id: "backdrop", variance: new Signal(0.2) },
     { id: "background", variance: new Signal(0.6) },
+    { id: "border", variance: new Signal(0.7) },
     { id: "raised", variance: new Signal(0.1) },
     { id: "foreground", variance: new Signal(0.5) },
     { id: "text", variance: new Signal(0.4) },
@@ -136,17 +149,102 @@ export class ThemeGrid extends HTMLElement {
     this.tableHeader = shadow.querySelector("#tableHeader");
     this.tableBody = shadow.querySelector("#tableBody");
     this.varianceAdjust = shadow.querySelector("#varianceAdjust");
+    this.cssCode = document.querySelector("#cssCode");
+    this.cssPreview = document.querySelector("#cssPreview");
 
     this.initializeTable();
   }
 
   initializeTable() {
-    this.addDisposable(new DisposableArrayListener(this.#columns, "change", (e) => this.renderTableHeaders()));
-    this.addDisposable(new DisposableArrayListener(this.#columns, "change", (e) => this.renderVarianceAdjust()));
+    this.addDisposable(new DisposableArrayListener(this.#variables, "change", (e) => this.renderTableHeaders()));
+    this.addDisposable(new DisposableArrayListener(this.#variables, "change", (e) => this.renderVarianceAdjust()));
     this.addDisposable(new DisposableArrayListener(this.#colorStops, "change", (e) => this.renderTableRows()));
 
     this.#colorStops.rev.subscribe(([rev])=>console.info(`this.#colorStops revision is now at ${rev}`))
 
+
+    const any = Signal.combineLatest(this.#colorStops.rev, this.#variables.rev, this.#levels.rev, ...this.#variables.map(({variance})=>variance));
+    const anyDeferred = Signal.debounce(any, 500);
+
+    this.addDisposable({dispose:()=>any.terminate()});
+    this.addDisposable({dispose:()=>anyDeferred.terminate()});
+
+    // generate code
+    this.addDisposable({dispose:anyDeferred.subscribe(v=>this.#cssCode.value=this.generateCSS())});
+
+    // highlight code
+    this.addDisposable({dispose:this.#cssCode.subscribe(cssCode => this.cssCode.innerHTML = Prism.highlight(cssCode, Prism.languages.css, 'css'))});
+    // make it live
+    this.addDisposable({dispose:this.#cssCode.subscribe(cssCode => this.cssPreview.innerHTML = cssCode)});
+
+
+  }
+
+
+  // levels
+  #levels1 = new ReactiveArray(
+    { id: "level1" },
+    { id: "level2" },
+    { id: "level3" },
+    { id: "level4" },
+    { id: "level5" },
+  );
+
+  // variance comes from here (I use .value correctly):
+
+
+
+
+/*
+// Option 2: Use a logarithmic scale
+return Math.pow(level / totalLevels, 1.2);
+
+// Option 3: Custom curve for better visual distribution
+const t = level / (totalLevels - 1);
+return Math.pow(t, 0.8); // Slows down the progression toward the end
+*/
+  calculateColor(level, variance){
+    const ratio =  (level + 0.5) / this.#levels.length;
+    const percentage = 100 * ratio;
+    const baseColor = gradientCalculator.getColorAtPercentage(this.#colorStops, 100 - percentage);
+    const transformedByVariance = this.#colorTransformer(baseColor, variance);
+    return transformedByVariance;
+  }
+
+  generateLevel(level=0){
+    if(!this.#levels[level]) return '';
+    const options = this.#levels[level];
+
+    return `
+      .up { /* level: ${options.id} */
+        ${this.#variables.map(variable=>`--${variable.id}: ${this.calculateColor(level, variable.variance)};`).join('\n')}
+        ${this.generateLevel(level + 1)}
+      }
+    `;
+  }
+  generateCSS(){
+
+    const options = {
+      "indent_size": "2",
+      "indent_char": " ",
+      "max_preserve_newlines": "-1",
+      "preserve_newlines": false,
+      "keep_array_indentation": false,
+      "break_chained_methods": false,
+      "indent_scripts": "normal",
+      "brace_style": "collapse",
+      "space_before_conditional": true,
+      "unescape_strings": false,
+      "jslint_happy": false,
+      "end_with_newline": true,
+      "wrap_line_length": "0",
+      "indent_inner_html": false,
+      "comma_first": false,
+      "e4x": false,
+      "indent_empty_lines": false
+    };
+
+    return css_beautify(this.generateLevel(0), options);
   }
 
   renderTableHeaders() {
@@ -154,7 +252,7 @@ export class ThemeGrid extends HTMLElement {
     const th = document.createElement("th"); // ID/blank Header (never changes)
     th.setAttribute("scope", "col");
     this.tableHeader.appendChild(th);
-    for (const { id } of this.#columns) {
+    for (const { id } of this.#variables) {
       const th = document.createElement("th");
       th.setAttribute("scope", "col");
       th.textContent = id;
@@ -170,7 +268,7 @@ export class ThemeGrid extends HTMLElement {
     th.textContent = "variance";
     this.varianceAdjust.appendChild(th);
 
-    for (const entry of this.#columns) {
+    for (const entry of this.#variables) {
       const td = document.createElement("td");
 
       const varianceInput = document.createElement("input");
@@ -197,7 +295,7 @@ export class ThemeGrid extends HTMLElement {
   renderTableRows() {
     this.tableBody.querySelectorAll("tr.color-row").forEach((row) => row.remove());
 
-    for (const [rowIndex, { id: rowId }] of this.#rows.entries()) {
+    for (const [rowIndex, { id: rowId }] of this.#levels.entries()) {
       const tr = document.createElement("tr");
       tr.setAttribute("class", "color-row");
 
@@ -208,19 +306,14 @@ export class ThemeGrid extends HTMLElement {
       tr.appendChild(th);
       //ROW HEADER
 
-      for (const [colIndex, { id: colId }] of this.#columns.entries()) {
+      for (const [colIndex, { id: colId }] of this.#variables.entries()) {
         const td = document.createElement("td");
         td.classList.add(`${rowId}-${colId}`);
 
-        const varianceSignal = this.#columns[colIndex].variance;
+        const varianceSignal = this.#variables[colIndex].variance;
 
-        const varianceSignalUpdateHandler = (v) => {
-          const colorValue = v;
-          const fraction = (rowIndex + 1) / this.#rows.length;
-          const percentage = 100 * fraction;
-          const baseColor = gradientCalculator.getColorAtPercentage(this.#colorStops, 100 - percentage);
-          const localColor = this.#colorTransformer(baseColor, colorValue);
-          td.style.background = localColor;
+        const varianceSignalUpdateHandler = variance => {
+          td.style.background =  this.calculateColor(rowIndex, variance)
         };
         const disposableListener = new DisposableSinusoidalListener(varianceSignal, varianceSignalUpdateHandler);
         this.disposeDisposables(`${rowId}-${colId}`);

@@ -75,52 +75,43 @@ offcanvas-panel .footer {
   border-top: 2px solid var(--l3-border);
 }
 
+.card {
+  color: var(--text);
+  margin-bottom: 2 rem;
+  border: 1px solid var(--border);
+  background-color: var(--background);
 
+  border-radius: 8px;
+  padding: 1rem;
 
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
 
+.card-details {
+  padding: var(--rounded);
 
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+}
 
+.card-details a {
+  align-self: flex-start;
+}
 
+.card > img {
+  border-top-left-radius: var(--rounded);
+  border-top-right-radius: var(--rounded);
+  color: var(--link);
+  background: var(--l3-fg);
+  outline: none;
+  border: none;
+}
 
-
-
-
-
-
-    .card {
-      border-color: var(--l3-br);
-      background-color: var(--l3-bg);
-      border-radius: var(--padding);
-      /*max-height: min(32rem, 25vh);*/
-    }
-
-    .card-details {
-      padding: var(--rounded);
-
-      display: flex;
-      flex-direction: column;
-      justify-content: space-evenly;
-    }
-
-    .card-details a {
-      align-self: flex-start;
-    }
-
-    .card > img {
-      border-top-left-radius: var(--rounded);
-      border-top-right-radius: var(--rounded);
-      color: var(--link);
-      background: var(--l3-fg);
-      outline: none;
-      border: none;
-
-    }
-
-    .card button {
-      color: var(--link);
-      background: var(--l3-fg);
-      border-radius: 4px;
-      outline: none;
-      border: none;
-
-    }
+.card button {
+  color: var(--link);
+  background: var(--l3-fg);
+  border-radius: 4px;
+  outline: none;
+  border: none;
+}

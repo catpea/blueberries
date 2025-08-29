@@ -8,7 +8,8 @@
     "rebuild-favicon": "./bin/rebuild-favicon.sh images/favicon/icon.jpg",
     "demo": "http-server -c-1 -o .",
     "test": "node --import 'data:text/javascript,import { register } from \"node:module\"; import { pathToFileURL } from \"node:url\"; register(pathToFileURL(\"./import-map-hooks.js\"));' --test",
-    "save": "git add .; git commit -m 'Updated Release'; npm version patch; npm publish; git push --follow-tags;"
+    "modules": "rsync -avL --exclude='.*' --exclude='_unused' ./node_modules/* ./modules/",
+    "save": "npm run modules; git add .; git commit -m 'Updated Release'; npm version patch; npm publish; git push --follow-tags;"
   },
   "keywords": [
     "rev",
@@ -33,10 +34,10 @@
     "../epidermis": "^1.0.1"
   },
   "dependencies": {
-    "ladybits": "^2.0.0",
+    "ladybits": "^2.0.3",
     "heebiejeebies": "^1.0.5",
     "mlue": "^1.0.7",
-    "sinusoid": "^1.0.1",
+    "sinusoid": "^1.1.1",
     "epidermis": "^1.0.1"
   }
 }
