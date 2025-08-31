@@ -1,5 +1,6 @@
 import { Signal, DisposableSinusoidalListener } from "#sinusoid";
 
+import { Disposables } from "../util/Disposables.js";
 import { DisposableEventListener } from "../util/DisposableEventListener.js";
 import { GradientCalculator } from "../util/GradientCalculator.js";
 import { DisposableArrayListener, ReactiveArray, detectSetChanges, detectOrderChanges } from "../util/ReactiveArray.js";
@@ -89,25 +90,11 @@ template.innerHTML = `
 export class ThemeGrid extends HTMLElement {
   #cssCode = new Signal('body {}');
   #colorStops = new ReactiveArray(); // set by external web-component
+  #disposables = new Disposables(); // set by external web-component
 
-  #disposables = new Map();
-  addDisposable(disposable, key = "this") {
-    if (typeof disposable?.dispose !== "function") throw new TypeError("This is for SomeDisposable.dispose() only.");
-    if (!this.#disposables.has(key)) this.#disposables.set(key, new Set());
-    this.#disposables.get(key).add(disposable);
-  }
-  hasDisposable(key = "this") {
-    const set = this.#disposables.get(key);
-    return !!(set && set.size > 0);
-  }
-  disposeDisposables(key = "this") {
-    const set = this.#disposables.get(key);
-    if (!set || set.size === 0) return;
-    const disposables = Array.from(set);
-    set.clear();
-    this.#disposables.delete(key);
-    disposables.map((o) => o.dispose());
-  }
+
+
+
 
   #levels = new ReactiveArray(
     // { id: "level0" },
@@ -156,26 +143,29 @@ export class ThemeGrid extends HTMLElement {
   }
 
   initializeTable() {
-    this.addDisposable(new DisposableArrayListener(this.#variables, "change", (e) => this.renderTableHeaders()));
-    this.addDisposable(new DisposableArrayListener(this.#variables, "change", (e) => this.renderVarianceAdjust()));
-    this.addDisposable(new DisposableArrayListener(this.#colorStops, "change", (e) => this.renderTableRows()));
+    this.#disposables.add(new DisposableArrayListener(this.#variables, "change", (e) => this.renderTableHeaders()));
+    this.#disposables.add(new DisposableArrayListener(this.#variables, "change", (e) => this.renderVarianceAdjust()));
+    this.#disposables.add(new DisposableArrayListener(this.#colorStops, "change", (e) => this.renderTableRows()));
 
     this.#colorStops.rev.subscribe(([rev])=>console.info(`this.#colorStops revision is now at ${rev}`))
 
 
     const any = Signal.combineLatest(this.#colorStops.rev, this.#variables.rev, this.#levels.rev, ...this.#variables.map(({variance})=>variance));
-    const anyDeferred = Signal.debounce(any, 500);
+    const anyDeferred = Signal.debounce(any, 1);
 
-    this.addDisposable({dispose:()=>any.terminate()});
-    this.addDisposable({dispose:()=>anyDeferred.terminate()});
+    this.#disposables.add({dispose:()=>any.terminate()});
+    this.#disposables.add({dispose:()=>anyDeferred.terminate()});
 
     // generate code
-    this.addDisposable({dispose:anyDeferred.subscribe(v=>this.#cssCode.value=this.generateCSS())});
+    this.#disposables.add({dispose:anyDeferred.subscribe(v=>this.#cssCode.value=this.generateCSS())});
 
     // highlight code
-    this.addDisposable({dispose:this.#cssCode.subscribe(cssCode => this.cssCode.innerHTML = Prism.highlight(cssCode, Prism.languages.css, 'css'))});
+    this.#disposables.add({dispose:this.#cssCode.subscribe(cssCode => this.cssCode.innerHTML = Prism.highlight(cssCode, Prism.languages.css, 'css'))});
     // make it live
-    this.addDisposable({dispose:this.#cssCode.subscribe(cssCode => this.cssPreview.innerHTML = cssCode)});
+    this.#disposables.add({dispose:this.#cssCode.subscribe(cssCode => this.cssPreview.innerHTML = cssCode)});
+    this.#disposables.add({dispose:this.#cssCode.subscribe(css => {
+      document.dispatchEvent(new CustomEvent("generated", { bubbles: true, detail:{css}}));
+    })});
 
 
   }
@@ -244,7 +234,8 @@ return Math.pow(t, 0.8); // Slows down the progression toward the end
       "indent_empty_lines": false
     };
 
-    return css_beautify(this.generateLevel(this.#levels.toReversed() , 0), options);
+    const css = this.generateLevel(this.#levels.toReversed(), 0);
+    return css_beautify(css , options);
   }
 
   renderTableHeaders() {
@@ -285,8 +276,8 @@ return Math.pow(t, 0.8); // Slows down the progression toward the end
 
       const disposableId = `variance-input-${entry.id}`;
       const disposableListener = new DisposableEventListener(varianceInput, "input", eventHandler);
-      this.disposeDisposables(disposableId);
-      this.addDisposable(disposableListener, disposableId);
+      this.#disposables.dispose(disposableId);
+      this.#disposables.add(disposableListener, disposableId);
 
       this.varianceAdjust.appendChild(td);
     }
@@ -316,8 +307,8 @@ return Math.pow(t, 0.8); // Slows down the progression toward the end
           td.style.background =  this.calculateColor(this.#levels, rowIndex, variance)
         };
         const disposableListener = new DisposableSinusoidalListener(varianceSignal, varianceSignalUpdateHandler);
-        this.disposeDisposables(`${rowId}-${colId}`);
-        this.addDisposable(disposableListener, `${rowId}-${colId}`);
+        this.#disposables.dispose(`${rowId}-${colId}`);
+        this.#disposables.add(disposableListener, `${rowId}-${colId}`);
 
         tr.appendChild(td);
       }
@@ -328,7 +319,9 @@ return Math.pow(t, 0.8); // Slows down the progression toward the end
 
   connectedCallback() {}
 
-  disconnectedCallback() {}
+  disconnectedCallback() {
+    this.#disposables.dispose();
+  }
 
   static get observedAttributes() {
     return ["gradient-stops"];

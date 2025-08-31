@@ -31,8 +31,12 @@
     <script type="importmap">
       {
         "imports": {
+          "#link-style": "./link-style/LinkStyle.js",
+
           "#offcanvas-panel": "./offcanvas-panel/OffcanvasPanel.js",
           "#tab-panel": "./tab-panel/TabPanel.js",
+          "#horizontal-view": "./horizontal-view/HorizontalView.js",
+
 
           "#gradient-bar": "./gradient-bar/GradientBar.js",
           "#gradient-stops": "./gradient-stops/GradientStops.js",
@@ -72,8 +76,11 @@
     -->
 
     <script type="module">
+
+      import { LinkStyle } from "#link-style";
       import { OffcanvasPanel } from "#offcanvas-panel";
       import { TabPanel } from "#tab-panel";
+      import { HorizontalView } from "#horizontal-view";
 
       import { GradientBar } from "#gradient-bar";
       import { GradientStops } from "#gradient-stops";
@@ -88,8 +95,11 @@
       // import { ColorCanvas } from "#color-canvas";
       // import { InputHsl } from "#input-hsl";
 
+      customElements.define("link-style", LinkStyle);
+
       customElements.define("offcanvas-panel", OffcanvasPanel);
       customElements.define("tab-panel", TabPanel);
+      customElements.define("horizontal-view", HorizontalView);
 
       customElements.define("gradient-bar", GradientBar);
       customElements.define("gradient-stops", GradientStops);
@@ -190,26 +200,8 @@
     </style>
 
     <div class="container">
-      <div class="preview">
 
-        <div class="card up">
-          level 1
-          <div class="card up">
-            level 2
-            <div class="card up">
-              level 3
-              <div class="card up">
-                level 4
-                <div class="card up">level 5</div>
-              </div>
-            </div>
-          </div>
-        </div>
 
-      </div>
-
-      <br />
-      <br />
       <div id="page">
         <header>
           <button data-offcanvas-toggle data-offcanvas-target="#sidebar" style="color: var(--l1-bg); cursor: pointer">&#9776;</button>

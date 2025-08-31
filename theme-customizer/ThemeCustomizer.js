@@ -1,9 +1,12 @@
 import {fromInput, derived, effect} from '#ladybits';
+import { Disposables } from "../util/Disposables.js";
+import { DisposableEventListener } from "../util/DisposableEventListener.js";
 
 // we must use the template element as it only requires: shadow.appendChild(template.content.cloneNode(true));
 const template = document.createElement('template');
 // we use html`` as it enables syntax higlighiting in zed editor
 template.innerHTML = html`
+
   <style>
   :host {
       display: grid;
@@ -35,9 +38,72 @@ template.innerHTML = html`
   <nav>
   <level-builder id="levelBuilder"></level-builder>
   </nav>
-
   <main>
-  <theme-grid id="themeGrid"></theme-grid>
+    <tab-panel>
+      <section data-title="Design View">
+        <horizontal-view>
+
+          <section style="min-width: 18rem; hmin-eight: 15rem; border-radius: 8px;">
+          <link href="style.css" rel="stylesheet">
+          <link-style event="generated"></link-style>
+
+
+          <div class="preview">
+
+            <div class="card up">
+              level 1
+              <div class="card up">
+                level 2
+                <div class="card up">
+                  level 3
+                  <div class="card up">
+                    level 4
+                    <div class="card up">level 5</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+
+          </section>
+
+          <section style="min-width: 18rem; hmin-eight: 15rem; border-radius: 8px;">
+            <link href="style.css" rel="stylesheet">
+            <link-style event="generated"></link-style>
+
+            <div class="up" style="background-color: var(--background); padding: 2rem;">
+              <div class="card up">
+                <div class="up" style="background-color: var(--background); padding: 2rem;">
+                  <h4><b>John Doe</b></h4>
+                  <p>Architect & Engineer</p>
+                </div>
+            </div>
+           </div>
+
+          </section>
+
+          <section>
+            <div class="card" style="width: 18rem; height: 15rem; border-radius: 8px; background-color: CadetBlue;"></div>
+          </section>
+
+          <section>
+            <div class="card" style="width: 18rem; height: 15rem; border-radius: 8px; background-color: DarkCyan;"></div>
+          </section>
+
+          <section>
+            <div class="card" style="width: 18rem; height: 15rem; border-radius: 8px; background-color: LightSeaGreen;"></div>
+          </section>
+
+        </horizontal-view>
+
+      </section>
+      <section data-title="Grid View">
+        <theme-grid id="themeGrid"></theme-grid>
+      </section>
+  </tab-panel>
+
   </main>
 
 
@@ -56,9 +122,10 @@ export class ThemeCustomizer extends HTMLElement {
   #disposables;
   constructor() {
     super();
-    this.#disposables = new Set();
+    this.#disposables = new Disposables()
 
     const shadow = this.attachShadow({ mode: "open" });
+
     shadow.appendChild(template.content.cloneNode(true));
 
     // Initialize with default gradient
@@ -73,8 +140,14 @@ export class ThemeCustomizer extends HTMLElement {
     this.levelBuilder = shadow.querySelector('#levelBuilder');
     this.levelBuilder.setAttribute('gradient-stops', stopsJson);
 
-    this.themeGrid = shadow.querySelector('#themeGrid');
+    // const sections = this.querySelectorAll('section[data-title]');
+    // this.themeGrid = this.querySelector('#themeGrid');
+    this.tabPanel = shadow.querySelector('tab-panel');
+    this.themeGrid = this.tabPanel.tabContent.querySelector('[data-title="Grid View"] #themeGrid');
     this.themeGrid.setAttribute('gradient-stops', stopsJson);
+
+
+
 
     // UNUSED AT THE MOMENT
     this.gradientBuilder = shadow.querySelector('#gradientBuilder');
@@ -96,16 +169,28 @@ export class ThemeCustomizer extends HTMLElement {
 
   fromInput(el, ev){
     const signal = fromInput(el, ev);
-    this.#disposables.add(()=>signal.terminate())
+    this.#disposables.add({dispose:()=>signal.terminate()})
     return signal;
   }
 
   connectedCallback() {
 
+    setTimeout(()=>{
+
+    const generatedStyle1 = document.getElementById('#generatedStyle1');
+    const generatedStyle2 = this.querySelector('#generatedStyle');
+    const generatedStyle3 = this.shadowRoot.querySelector('#generatedStyle');
+
+    console.log(generatedStyle1, generatedStyle2, generatedStyle3);
+    },1000)
+
+    // this.#disposables.add(new DisposableEventListener(this.themeGrid, "generated", (e) => this.generatedStyle.innerHTML = e.detail.css ));
+    // console.log(this.generatedStyle);
+
   }
 
   disconnectedCallback() {
-    this.#disposables.forEach(bye=>bye())
+    this.#disposables.dispose();
   }
 
 
