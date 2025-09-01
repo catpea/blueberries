@@ -48,7 +48,7 @@ template.innerHTML = html`
           <link-style event="generated"></link-style>
 
 
-          <div class="preview">
+          <div class="previeww">
 
             <div class="card up">
               level 1
@@ -69,18 +69,42 @@ template.innerHTML = html`
 
           </section>
 
-          <section style="min-width: 18rem; hmin-eight: 15rem; border-radius: 8px;">
-            <link href="style.css" rel="stylesheet">
-            <link-style event="generated"></link-style>
+          <section style="--border-radius: 8px; border-radius: var(--border-radius); width: max(320px, 25vw); height: 320px;">
 
-            <div class="up" style="background-color: var(--background); padding: 2rem;">
-              <div class="card up">
-                <div class="up" style="background-color: var(--background); padding: 2rem;">
-                  <h4><b>John Doe</b></h4>
-                  <p>Architect & Engineer</p>
+          <link href="style.css" rel="stylesheet">
+          <link-style event="generated"></link-style>
+
+            <!--<div class="preview">
+              <div style=" width: 100%; height: 100px; border: 16px solid red;">
+                this square is 100% wide, 50px tall (because it is scale .5) and the border is 8px.
+                it fills the preview container completely.
+              </div>
+            </div>-->
+
+            <div class="preview">
+
+              <div class="up" style="background-color: var(--background); padding: 2rem;  ">
+                <div class="card up">
+                  <div class="up" style="background-color: var(--background); padding: 2rem;">
+                    <h4 class="up" style="background-color: var(--background); padding: 2rem; border-radius: 8px;"><b>John Doe</b></h4>
+                    <p>Architect & Engineer</p>
+                    <p>Innovative and detail-oriented Architect & Engineer with over 15 years of experience in high-stakes projects, including the highly classified and groundbreaking initiative that successfully faked the Moon Landing. Collaborated with a quirky mix of aerospace companies and government agencies, including LunarTech Innovations and Starlight Dynamics, to design and implement elaborate structures and engineering solutions that made it all look real.</p>
+                    <p>Expert in project management, with a proven track record of delivering "out-of-this-world" projects on time and within budget. Committed to pushing the boundaries of engineering and architecture, all while keeping a wink and a nod to the absurdity of it all.</p>
+                    <p>Expert in project management, with a proven track record of delivering "out-of-this-world" projects on time and within budget. Committed to pushing the boundaries of engineering and architecture, all while keeping a wink and a nod to the absurdity of it all.</p>
+                    <p>Expert in project management, with a proven track record of delivering "out-of-this-world" projects on time and within budget. Committed to pushing the boundaries of engineering and architecture, all while keeping a wink and a nod to the absurdity of it all.</p>
+                    <p>Expert in project management, with a proven track record of delivering "out-of-this-world" projects on time and within budget. Committed to pushing the boundaries of engineering and architecture, all while keeping a wink and a nod to the absurdity of it all.</p>
+                    <p>Expert in project management, with a proven track record of delivering "out-of-this-world" projects on time and within budget. Committed to pushing the boundaries of engineering and architecture, all while keeping a wink and a nod to the absurdity of it all.</p>
+                    <p>Expert in project management, with a proven track record of delivering "out-of-this-world" projects on time and within budget. Committed to pushing the boundaries of engineering and architecture, all while keeping a wink and a nod to the absurdity of it all.</p>
+                    <p>Expert in project management, with a proven track record of delivering "out-of-this-world" projects on time and within budget. Committed to pushing the boundaries of engineering and architecture, all while keeping a wink and a nod to the absurdity of it all.</p>
+                    <p>Expert in project management, with a proven track record of delivering "out-of-this-world" projects on time and within budget. Committed to pushing the boundaries of engineering and architecture, all while keeping a wink and a nod to the absurdity of it all.</p>
+                    <p>Expert in project management, with a proven track record of delivering "out-of-this-world" projects on time and within budget. Committed to pushing the boundaries of engineering and architecture, all while keeping a wink and a nod to the absurdity of it all.</p>
+                    <p>Expert in project management, with a proven track record of delivering "out-of-this-world" projects on time and within budget. Committed to pushing the boundaries of engineering and architecture, all while keeping a wink and a nod to the absurdity of it all.</p>
+                    <p>Expert in project management, with a proven track record of delivering "out-of-this-world" projects on time and within budget. Committed to pushing the boundaries of engineering and architecture, all while keeping a wink and a nod to the absurdity of it all.</p>
+                  </div>
                 </div>
+              </div>
+
             </div>
-           </div>
 
           </section>
 

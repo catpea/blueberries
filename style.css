@@ -1,3 +1,7 @@
+/**, *::before, *::after {
+  box-sizing: border-box;
+}*/
+
 /* https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion */
 /* https://developer.mozilla.org/en-US/docs/Web/CSS/scroll-behavior */
 @media (prefers-reduced-motion: no-preference) {
@@ -68,6 +72,10 @@ offcanvas-panel > .header > button[data-dismiss] {
   align-items: normal;
 }
 
+
+
+
+
 offcanvas-panel .footer {
   display: flex;
 
@@ -76,7 +84,7 @@ offcanvas-panel .footer {
 }
 
 .card {
-  color: var(--text);
+  /*color: var(--text);*/
   margin-bottom: 2 rem;
   border: 1px solid var(--border);
   background-color: var(--background);
@@ -115,3 +123,37 @@ offcanvas-panel .footer {
   outline: none;
   border: none;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ .preview {
+    box-sizing: border-box;
+
+   --scale: 0.2;              /* change this if you want a different scale */
+
+   transform: scale(var(--scale));
+   transform-origin: top left;
+
+   width: calc(100% / var(--scale));
+   height: calc(100% / var(--scale));
+
+   overflow: auto;            /* show scrollbars if content exceeds viewport */
+
+   /* bonus*/
+   > * { border-radius: calc(var(--border-radius) / var(--scale)) }
+ }

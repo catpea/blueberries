@@ -1,4 +1,4 @@
-Add Color Funcions
+Add Color Functions
 
 Infinite Scroll
 

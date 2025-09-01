@@ -1,4 +1,5 @@
 import { Signal, DisposableSinusoidalListener } from "#sinusoid";
+import { ColorFilters, ColorMath } from "#iridescence";
 
 import { Disposables } from "../util/Disposables.js";
 import { DisposableEventListener } from "../util/DisposableEventListener.js";
@@ -81,7 +82,9 @@ template.innerHTML = `
     </thead>
 
     <tbody id="tableBody">
-      <tr id="varianceAdjust"></tr>
+      <tr id="transformerSelectors"></tr>
+      <tr id="powerAdjusters"></tr>
+      <tr id="sensitivityAdjusters"></tr>
     </tbody>
 
   </table>
@@ -92,7 +95,47 @@ export class ThemeGrid extends HTMLElement {
   #colorStops = new ReactiveArray(); // set by external web-component
   #disposables = new Disposables(); // set by external web-component
 
-
+  #colorFilters = [
+    {value:'darkOceanDepths', text:'darkOceanDepths'},
+    {value:'nightLakeReflection', text:'nightLakeReflection'},
+    {value:'foxfire', text:'foxfire'},
+    {value:'moonlessForest', text:'moonlessForest'},
+    {value:'deepCaveAmbient', text:'deepCaveAmbient'},
+    {value:'terminatorVision', text:'terminatorVision'},
+    {value:'predatorThermal', text:'predatorThermal'},
+    {value:'nightVisionGoggles', text:'nightVisionGoggles'},
+    {value:'cyberpunkNeon', text:'cyberpunkNeon'},
+    {value:'ghostlySpectral', text:'ghostlySpectral'},
+    {value:'nebulaDust', text:'nebulaDust'},
+    {value:'plutoAtmosphere', text:'plutoAtmosphere'},
+    {value:'blackHoleAccretion', text:'blackHoleAccretion'},
+    {value:'voidCold', text:'voidCold'},
+    {value:'cosmicRadiation', text:'cosmicRadiation'},
+    {value:'atmosphericScatter', text:'atmosphericScatter'},
+    {value:'sunsetGradient', text:'sunsetGradient'},
+    {value:'mistEffect', text:'mistEffect'},
+    {value:'chromaticAberration', text:'chromaticAberration'},
+    {value:'iridescence', text:'iridescence'},
+    {value:'oilSlick', text:'oilSlick'},
+    {value:'soapBubble', text:'soapBubble'},
+    {value:'sunlightTransform', text:'sunlightTransform'},
+    {value:'moonlightTransform', text:'moonlightTransform'},
+    {value:'bioluminescence', text:'bioluminescence'},
+    {value:'butterflyWing', text:'butterflyWing'},
+    {value:'firefly', text:'firefly'},
+    {value:'underwaterCaustics', text:'underwaterCaustics'},
+    {value:'deepSeaGlow', text:'deepSeaGlow'},
+    {value:'auroraTransform', text:'auroraTransform'},
+    {value:'lightning', text:'lightning'},
+    {value:'canopyFilter', text:'canopyFilter'},
+    {value:'xenCrystal', text:'xenCrystal'},
+    {value:'gravityGun', text:'gravityGun'},
+    {value:'combine', text:'combine'},
+    {value:'headcrabInfestation', text:'headcrabInfestation'},
+    {value:'lambdaCore', text:'lambdaCore'},
+    {value:'portalEnergy', text:'portalEnergy'},
+    {value:'radioactive', text:'radioactive'},
+  ];
 
 
 
@@ -112,14 +155,14 @@ export class ThemeGrid extends HTMLElement {
   // level5,  level4,  level3,  level2,  level1
   // caption,  backdrop,  background,  raised,  foreground,  text,  link,  info,  success,  warning,  danger,  muted,
   #variables = new ReactiveArray(
-    { id: "caption", variance: new Signal(0.7) },
-    { id: "backdrop", variance: new Signal(0.2) },
-    { id: "background", variance: new Signal(0.6) },
-    { id: "border", variance: new Signal(0.7) },
-    { id: "raised", variance: new Signal(0.1) },
-    { id: "foreground", variance: new Signal(0.5) },
-    { id: "text", variance: new Signal(0.4) },
-    { id: "link", variance: new Signal(0.9) },
+    { id: "caption",       transformer: new Signal('foxfire'), power: new Signal(0.2),   sensitivity: new Signal(0.4), },
+    { id: "backdrop",      transformer: new Signal('foxfire'), power: new Signal(0.2),   sensitivity: new Signal(0.4), },
+    { id: "background",    transformer: new Signal('foxfire'), power: new Signal(0.2),   sensitivity: new Signal(0.4), },
+    { id: "border",        transformer: new Signal('foxfire'), power: new Signal(0.2),   sensitivity: new Signal(0.4), },
+    { id: "raised",        transformer: new Signal('foxfire'), power: new Signal(0.2),   sensitivity: new Signal(0.4), },
+    { id: "foreground",    transformer: new Signal('foxfire'), power: new Signal(0.2),   sensitivity: new Signal(0.4), },
+    { id: "text",          transformer: new Signal('foxfire'), power: new Signal(0.2),   sensitivity: new Signal(0.4), },
+    { id: "link",          transformer: new Signal('foxfire'), power: new Signal(0.2),   sensitivity: new Signal(0.4), },
 
     // {id: 'info', value:new Signal(0.8)},
     // {id: 'success', value:new Signal(0.9)},
@@ -135,7 +178,11 @@ export class ThemeGrid extends HTMLElement {
 
     this.tableHeader = shadow.querySelector("#tableHeader");
     this.tableBody = shadow.querySelector("#tableBody");
-    this.varianceAdjust = shadow.querySelector("#varianceAdjust");
+
+    this.transformerSelectors = shadow.querySelector("#transformerSelectors");
+    this.powerAdjusters = shadow.querySelector("#powerAdjusters");
+    this.sensitivityAdjusters = shadow.querySelector("#sensitivityAdjusters");
+
     this.cssCode = document.querySelector("#cssCode");
     this.cssPreview = document.querySelector("#cssPreview");
 
@@ -143,15 +190,25 @@ export class ThemeGrid extends HTMLElement {
   }
 
   initializeTable() {
+
     this.#disposables.add(new DisposableArrayListener(this.#variables, "change", (e) => this.renderTableHeaders()));
-    this.#disposables.add(new DisposableArrayListener(this.#variables, "change", (e) => this.renderVarianceAdjust()));
+    this.#disposables.add(new DisposableArrayListener(this.#variables, "change", (e) => this.renderTransformerSelectors()));
+    this.#disposables.add(new DisposableArrayListener(this.#variables, "change", (e) => this.renderPowerAdjusters()));
+    this.#disposables.add(new DisposableArrayListener(this.#variables, "change", (e) => this.renderSensitivityAdjusters()));
     this.#disposables.add(new DisposableArrayListener(this.#colorStops, "change", (e) => this.renderTableRows()));
 
     this.#colorStops.rev.subscribe(([rev])=>console.info(`this.#colorStops revision is now at ${rev}`))
 
 
-    const any = Signal.combineLatest(this.#colorStops.rev, this.#variables.rev, this.#levels.rev, ...this.#variables.map(({variance})=>variance));
-    const anyDeferred = Signal.debounce(any, 1);
+    const any = Signal.combineLatest(
+      this.#colorStops.rev,
+      this.#variables.rev,
+      this.#levels.rev,
+      ...this.#variables.map(({transformer})=>transformer),
+      ...this.#variables.map(({power})=>power),
+      ...this.#variables.map(({sensitivity})=>sensitivity),
+      );
+    const anyDeferred = Signal.debounce(any, 100);
 
     this.#disposables.add({dispose:()=>any.terminate()});
     this.#disposables.add({dispose:()=>anyDeferred.terminate()});
@@ -180,7 +237,7 @@ export class ThemeGrid extends HTMLElement {
     { id: "level5" },
   );
 
-  // variance comes from here (I use .value correctly):
+  // sensitivity comes from here (I use .value correctly):
 
 
 
@@ -193,12 +250,12 @@ return Math.pow(level / totalLevels, 1.2);
 const t = level / (totalLevels - 1);
 return Math.pow(t, 0.8); // Slows down the progression toward the end
 */
-  calculateColor(levels, level, variance, inverse){
+  calculateColor(levels, level, sensitivity, inverse){
     const ratio =  (level + 0.5) / levels.length;
     const percentage = 100 * ratio;
     const baseColor = gradientCalculator.getColorAtPercentage(this.#colorStops, inverse?percentage:100-percentage);
-    const transformedByVariance = this.#colorTransformer(baseColor, variance);
-    return transformedByVariance;
+    const transformedBySensitivity = this.#colorTransformer(baseColor, sensitivity);
+    return transformedBySensitivity;
   }
 
   generateLevel(levels, level=0){
@@ -207,7 +264,7 @@ return Math.pow(t, 0.8); // Slows down the progression toward the end
 
     return `
       .up { /* level: ${options.id} ${(level + 0.5) / levels.length} */
-        ${this.#variables.map(variable=>`--${variable.id}: ${this.calculateColor(levels, level, variable.variance, true)};`).join('\n')}
+        ${this.#variables.map(variable=>`--${variable.id}: ${this.calculateColor(levels, level, variable.sensitivity, true)};`).join('\n')}
         ${this.generateLevel(levels, level + 1)}
       }
     `;
@@ -251,37 +308,116 @@ return Math.pow(t, 0.8); // Slows down the progression toward the end
     }
   }
 
-  renderVarianceAdjust() {
-    this.varianceAdjust.textContent = "";
+  renderSensitivityAdjusters() {
+    this.sensitivityAdjusters.textContent = "";
 
     const th = document.createElement("th");
     th.setAttribute("scope", "row");
-    th.textContent = "variance";
-    this.varianceAdjust.appendChild(th);
+    th.textContent = "sensitivity";
+    this.sensitivityAdjusters.appendChild(th);
 
     for (const entry of this.#variables) {
       const td = document.createElement("td");
 
-      const varianceInput = document.createElement("input");
-      varianceInput.setAttribute("type", "number");
-      varianceInput.setAttribute("min", "0");
-      varianceInput.setAttribute("max", "1");
-      varianceInput.setAttribute("step", "0.01");
-      varianceInput.setAttribute("value", entry.variance.value);
-      td.appendChild(varianceInput);
+      const sensitivityInput = document.createElement("input");
+      sensitivityInput.setAttribute("type", "number");
+      sensitivityInput.setAttribute("min", "0");
+      sensitivityInput.setAttribute("max", "1");
+      sensitivityInput.setAttribute("step", "0.01");
+      sensitivityInput.setAttribute("value", entry.sensitivity.value);
+      td.appendChild(sensitivityInput);
 
       const eventHandler = (e) => {
-        entry.variance.value = e.target.value;
+        entry.sensitivity.value = e.target.value;
       };
 
-      const disposableId = `variance-input-${entry.id}`;
-      const disposableListener = new DisposableEventListener(varianceInput, "input", eventHandler);
+      const disposableId = `sensitivity-input-${entry.id}`;
+      const disposableListener = new DisposableEventListener(sensitivityInput, "input", eventHandler);
       this.#disposables.dispose(disposableId);
       this.#disposables.add(disposableListener, disposableId);
 
-      this.varianceAdjust.appendChild(td);
+      this.sensitivityAdjusters.appendChild(td);
     }
   }
+
+
+  renderPowerAdjusters() {
+    this.powerAdjusters.textContent = "";
+
+    const th = document.createElement("th");
+    th.setAttribute("scope", "row");
+    th.textContent = "power";
+    this.powerAdjusters.appendChild(th);
+
+    for (const entry of this.#variables) {
+      const td = document.createElement("td");
+
+      const powerInput = document.createElement("input");
+      powerInput.setAttribute("type", "number");
+      powerInput.setAttribute("min", "0");
+      powerInput.setAttribute("max", "1");
+      powerInput.setAttribute("step", "0.01");
+      powerInput.setAttribute("value", entry.power.value);
+      td.appendChild(powerInput);
+
+      const eventHandler = (e) => {
+        entry.power.value = e.target.value;
+      };
+
+      const disposableId = `power-input-${entry.id}`;
+      const disposableListener = new DisposableEventListener(powerInput, "input", eventHandler);
+      this.#disposables.dispose(disposableId);
+      this.#disposables.add(disposableListener, disposableId);
+
+      this.powerAdjusters.appendChild(td);
+    }
+  }
+
+
+
+
+
+
+
+  renderTransformerSelectors() {
+    this.transformerSelectors.textContent = "";
+
+    const th = document.createElement("th");
+    th.setAttribute("scope", "row");
+    th.textContent = "transformer";
+    this.transformerSelectors.appendChild(th);
+
+    for (const entry of this.#variables) {
+      const td = document.createElement("td");
+
+      const transformerSelect = document.createElement("select");
+
+      for(const {value, text} of this.#colorFilters){
+        const transformerOption = document.createElement("option");
+        transformerOption.setAttribute("value", value);
+        transformerOption.innerText = text;
+        transformerSelect.appendChild(transformerOption);
+      }
+      transformerSelect.value = entry.transformer.value;
+
+      td.appendChild(transformerSelect);
+
+      const eventHandler = (e) => {
+        entry.transformer.value = e.target.value;
+      };
+
+      const disposableId = `transformer-select-${entry.id}`;
+      const disposableListener = new DisposableEventListener(transformerSelect, "change", eventHandler);
+      this.#disposables.dispose(disposableId);
+      this.#disposables.add(disposableListener, disposableId);
+
+
+      this.transformerSelectors.appendChild(td);
+    }
+  }
+
+
+
 
   renderTableRows() {
     this.tableBody.querySelectorAll("tr.color-row").forEach((row) => row.remove());
@@ -301,12 +437,12 @@ return Math.pow(t, 0.8); // Slows down the progression toward the end
         const td = document.createElement("td");
         td.classList.add(`${rowId}-${colId}`);
 
-        const varianceSignal = this.#variables[colIndex].variance;
+        const sensitivitySignal = this.#variables[colIndex].sensitivity;
 
-        const varianceSignalUpdateHandler = variance => {
-          td.style.background =  this.calculateColor(this.#levels, rowIndex, variance)
+        const sensitivitySignalUpdateHandler = sensitivity => {
+          td.style.background =  this.calculateColor(this.#levels, rowIndex, sensitivity)
         };
-        const disposableListener = new DisposableSinusoidalListener(varianceSignal, varianceSignalUpdateHandler);
+        const disposableListener = new DisposableSinusoidalListener(sensitivitySignal, sensitivitySignalUpdateHandler);
         this.#disposables.dispose(`${rowId}-${colId}`);
         this.#disposables.add(disposableListener, `${rowId}-${colId}`);
 
@@ -341,9 +477,32 @@ return Math.pow(t, 0.8); // Slows down the progression toward the end
     this.dispatchEvent(new CustomEvent("something", { bubbles: true }));
   }
 
-  #colorTransformer(baseColor, colorVariant) {
-    const hslColor = gradientCalculator.hexToHsl(baseColor);
-    const shadedHsl = gradientCalculator.toShade(hslColor, 1 - colorVariant);
-    return gradientCalculator.hslToHex(shadedHsl);
+
+
+
+  #colorTransformer(hexColor, colorVariant) {
+    console.log('GUARD', hexColor)
+    if(hexColor == null) return '#000';
+
+    const filter = new ColorFilters();
+    const rgbColor = ColorMath.hexToRgb(hexColor);
+    console.log('GUARD rgbColor', rgbColor)
+
+    const q = 1;
+    const rgbTransformed = filter.darkOceanDepths(rgbColor, (1 - colorVariant) * q );
+    console.log('GUARD rgbTransformed', rgbTransformed)
+
+
+    const response = ColorMath.rgbToHex(rgbTransformed.r, rgbTransformed.g, rgbTransformed.b);
+    console.log('@ response', rgbTransformed, response)
+    return response;
+
+    // const hslColor = gradientCalculator.hexToHsl(baseColor);
+    // const shadedHsl = gradientCalculator.toShade(hslColor, 1 - colorVariant);
+    // return gradientCalculator.hslToHex(shadedHsl);
+
+
   }
+
+
 }
