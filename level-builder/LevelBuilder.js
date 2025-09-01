@@ -430,7 +430,16 @@ export class LevelBuilder extends HTMLElement {
       b: parseInt(result[3], 16)
     } : { r: 0, g: 0, b: 0 };
   }
+  rgbStrToHex(rgb) {
+    const match = rgb.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+    if (!match) return "#000000";
 
+    const r = parseInt(match[1]).toString(16).padStart(2, "0");
+    const g = parseInt(match[2]).toString(16).padStart(2, "0");
+    const b = parseInt(match[3]).toString(16).padStart(2, "0");
+
+    return `#${r}${g}${b}`;
+  }
   ensureHexColor(color) {
     if (color.startsWith('#')) return color;
     if (color.startsWith('rgb')) return this.rgbStrToHex(color);

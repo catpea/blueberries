@@ -39,7 +39,7 @@ template.innerHTML = html`
   <level-builder id="levelBuilder"></level-builder>
   </nav>
   <main>
-    <tab-panel>
+
       <section data-title="Design View">
         <horizontal-view>
 
@@ -124,9 +124,9 @@ template.innerHTML = html`
 
       </section>
       <section data-title="Grid View">
-        <theme-grid id="themeGrid"></theme-grid>
       </section>
-  </tab-panel>
+
+        <theme-grid id="themeGrid"></theme-grid>
 
   </main>
 
@@ -165,9 +165,9 @@ export class ThemeCustomizer extends HTMLElement {
     this.levelBuilder.setAttribute('gradient-stops', stopsJson);
 
     // const sections = this.querySelectorAll('section[data-title]');
-    // this.themeGrid = this.querySelector('#themeGrid');
-    this.tabPanel = shadow.querySelector('tab-panel');
-    this.themeGrid = this.tabPanel.tabContent.querySelector('[data-title="Grid View"] #themeGrid');
+    this.themeGrid = shadow.querySelector('#themeGrid');
+    // this.tabPanel = shadow.querySelector('tab-panel');
+    // this.themeGrid = this.tabPanel.tabContent.querySelector('[data-title="Grid View"] #themeGrid');
     this.themeGrid.setAttribute('gradient-stops', stopsJson);
 
 

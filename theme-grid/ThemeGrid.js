@@ -117,7 +117,7 @@ export class ThemeGrid extends HTMLElement {
     {value:'chromaticAberration', text:'chromaticAberration'},
     {value:'iridescence', text:'iridescence'},
     {value:'oilSlick', text:'oilSlick'},
-    {value:'soapBubble', text:'soapBubble'},
+    // {value:'soapBubble', text:'soapBubble'}, // uses angle
     {value:'sunlightTransform', text:'sunlightTransform'},
     {value:'moonlightTransform', text:'moonlightTransform'},
     {value:'bioluminescence', text:'bioluminescence'},
@@ -141,11 +141,11 @@ export class ThemeGrid extends HTMLElement {
 
   #levels = new ReactiveArray(
     // { id: "level0" },
-    { id: "level1" },
-    { id: "level2" },
-    { id: "level3" },
-    { id: "level4" },
-    { id: "level5" },
+    { id: "up5" },
+    { id: "up4" },
+    { id: "up3" },
+    { id: "up2" },
+    { id: "up1" },
     // { id: "level6" },
     // { id: "level7" },
     // { id: "level8" },
@@ -155,14 +155,14 @@ export class ThemeGrid extends HTMLElement {
   // level5,  level4,  level3,  level2,  level1
   // caption,  backdrop,  background,  raised,  foreground,  text,  link,  info,  success,  warning,  danger,  muted,
   #variables = new ReactiveArray(
-    { id: "caption",       transformer: new Signal('foxfire'), power: new Signal(0.2),   sensitivity: new Signal(0.4), },
-    { id: "backdrop",      transformer: new Signal('foxfire'), power: new Signal(0.2),   sensitivity: new Signal(0.4), },
-    { id: "background",    transformer: new Signal('foxfire'), power: new Signal(0.2),   sensitivity: new Signal(0.4), },
-    { id: "border",        transformer: new Signal('foxfire'), power: new Signal(0.2),   sensitivity: new Signal(0.4), },
-    { id: "raised",        transformer: new Signal('foxfire'), power: new Signal(0.2),   sensitivity: new Signal(0.4), },
-    { id: "foreground",    transformer: new Signal('foxfire'), power: new Signal(0.2),   sensitivity: new Signal(0.4), },
-    { id: "text",          transformer: new Signal('foxfire'), power: new Signal(0.2),   sensitivity: new Signal(0.4), },
-    { id: "link",          transformer: new Signal('foxfire'), power: new Signal(0.2),   sensitivity: new Signal(0.4), },
+    { id: "caption",       transformer: new Signal('foxfire'), power: new Signal(0.5),   sensitivity: new Signal(0), },
+    { id: "backdrop",      transformer: new Signal('foxfire'), power: new Signal(0.5),   sensitivity: new Signal(0), },
+    { id: "background",    transformer: new Signal('foxfire'), power: new Signal(0.5),   sensitivity: new Signal(0), },
+    { id: "border",        transformer: new Signal('foxfire'), power: new Signal(0.5),   sensitivity: new Signal(0), },
+    { id: "raised",        transformer: new Signal('foxfire'), power: new Signal(0.5),   sensitivity: new Signal(0), },
+    { id: "foreground",    transformer: new Signal('foxfire'), power: new Signal(0.5),   sensitivity: new Signal(0), },
+    { id: "text",          transformer: new Signal('foxfire'), power: new Signal(0.5),   sensitivity: new Signal(0), },
+    { id: "link",          transformer: new Signal('foxfire'), power: new Signal(0.5),   sensitivity: new Signal(0), },
 
     // {id: 'info', value:new Signal(0.8)},
     // {id: 'success', value:new Signal(0.9)},
@@ -228,14 +228,6 @@ export class ThemeGrid extends HTMLElement {
   }
 
 
-  // levels
-  #levels1 = new ReactiveArray(
-    { id: "level1" },
-    { id: "level2" },
-    { id: "level3" },
-    { id: "level4" },
-    { id: "level5" },
-  );
 
   // sensitivity comes from here (I use .value correctly):
 
@@ -250,23 +242,59 @@ return Math.pow(level / totalLevels, 1.2);
 const t = level / (totalLevels - 1);
 return Math.pow(t, 0.8); // Slows down the progression toward the end
 */
-  calculateColor(levels, level, sensitivity, inverse){
-    const ratio =  (level + 0.5) / levels.length;
+  calculateColor(levels, level, variable, inverse){
+    const filter = new ColorFilters();
+
+    const transformer = variable.transformer.value;
+    const power = variable.power.value;
+    const sensitivity = variable.sensitivity.value;
+
+    const ratio = (level + 0.5) / levels.length;
     const percentage = 100 * ratio;
-    const baseColor = gradientCalculator.getColorAtPercentage(this.#colorStops, inverse?percentage:100-percentage);
-    const transformedBySensitivity = this.#colorTransformer(baseColor, sensitivity);
-    return transformedBySensitivity;
+    const location = inverse?percentage:100-percentage;
+
+    const hexColor = gradientCalculator.getColorAtPercentage(this.#colorStops, location);
+    console.log('DDD', hexColor)
+    if(hexColor == null) return '#000';
+
+    const originalColor = ColorMath.hexToRgb(hexColor);
+
+    const transformedColor = filter[transformer](originalColor,  power);
+    const attenuatedColor = ColorMath.mix(originalColor, transformedColor, sensitivity);
+    // const attenuatedColor = ColorMath.mix(transformedColor, originalColor, sensitivity);
+
+    const response = ColorMath.rgbToHex(attenuatedColor.r, attenuatedColor.g, attenuatedColor.b);
+    // const response = ColorMath.rgbToHex(originalColor.r, originalColor.g, originalColor.b);
+    // return hexColor;
+    return response;
   }
 
-  generateLevel(levels, level=0){
+  generateUps(levels, level=0){
     if(!levels[level]) return '';
     const options = levels[level];
 
     return `
       .up { /* level: ${options.id} ${(level + 0.5) / levels.length} */
-        ${this.#variables.map(variable=>`--${variable.id}: ${this.calculateColor(levels, level, variable.sensitivity, true)};`).join('\n')}
-        ${this.generateLevel(levels, level + 1)}
+        ${this.#variables.map(variable=>`--${variable.id}:  var(--${options.id}-${variable.id});`).join('\n')}
+        ${this.generateUps(levels, level + 1)}
       }
+    `;
+    // return `
+    //   .up { /* level: ${options.id} ${(level + 0.5) / levels.length} */
+    //     ${this.#variables.map(variable=>`--${variable.id}: ${this.calculateColor(levels, level, variable, true)};`).join('\n')}
+    //     ${this.generateUps(levels, level + 1)}
+    //   }
+    // `;
+  }
+  generateLevels(levels, level=0){
+    if(!levels[level]) return '';
+    const options = levels[level];
+
+    return `
+
+        ${this.#variables.map(variable=>`--${options.id}-${variable.id}: ${this.calculateColor(levels, level, variable, true)};`).join('\n')}
+        ${this.generateLevels(levels, level + 1)}
+
     `;
   }
   generateCSS(){
@@ -291,7 +319,9 @@ return Math.pow(t, 0.8); // Slows down the progression toward the end
       "indent_empty_lines": false
     };
 
-    const css = this.generateLevel(this.#levels.toReversed(), 0);
+    let css = '';
+    css += `:root {${ this.generateLevels(this.#levels.toReversed(), 0)}}`;
+    css += this.generateUps(this.#levels.toReversed(), 0);
     return css_beautify(css , options);
   }
 
@@ -374,11 +404,6 @@ return Math.pow(t, 0.8); // Slows down the progression toward the end
   }
 
 
-
-
-
-
-
   renderTransformerSelectors() {
     this.transformerSelectors.textContent = "";
 
@@ -435,16 +460,17 @@ return Math.pow(t, 0.8); // Slows down the progression toward the end
 
       for (const [colIndex, { id: colId }] of this.#variables.entries()) {
         const td = document.createElement("td");
-        td.classList.add(`${rowId}-${colId}`);
+        td.setAttribute('style', `background: var(--${rowId}-${colId});`)
+        // td.classList.add(`${rowId}-${colId}`);
 
-        const sensitivitySignal = this.#variables[colIndex].sensitivity;
+        // const sensitivitySignal = this.#variables[colIndex].sensitivity;
 
-        const sensitivitySignalUpdateHandler = sensitivity => {
-          td.style.background =  this.calculateColor(this.#levels, rowIndex, sensitivity)
-        };
-        const disposableListener = new DisposableSinusoidalListener(sensitivitySignal, sensitivitySignalUpdateHandler);
-        this.#disposables.dispose(`${rowId}-${colId}`);
-        this.#disposables.add(disposableListener, `${rowId}-${colId}`);
+        // const sensitivitySignalUpdateHandler = sensitivity => {
+        //   td.style.background =  this.calculateColor(this.#levels, rowIndex, sensitivity)
+        // };
+        // const disposableListener = new DisposableSinusoidalListener(sensitivitySignal, sensitivitySignalUpdateHandler);
+        // this.#disposables.dispose(`${rowId}-${colId}`);
+        // this.#disposables.add(disposableListener, `${rowId}-${colId}`);
 
         tr.appendChild(td);
       }
@@ -480,29 +506,6 @@ return Math.pow(t, 0.8); // Slows down the progression toward the end
 
 
 
-  #colorTransformer(hexColor, colorVariant) {
-    console.log('GUARD', hexColor)
-    if(hexColor == null) return '#000';
-
-    const filter = new ColorFilters();
-    const rgbColor = ColorMath.hexToRgb(hexColor);
-    console.log('GUARD rgbColor', rgbColor)
-
-    const q = 1;
-    const rgbTransformed = filter.darkOceanDepths(rgbColor, (1 - colorVariant) * q );
-    console.log('GUARD rgbTransformed', rgbTransformed)
-
-
-    const response = ColorMath.rgbToHex(rgbTransformed.r, rgbTransformed.g, rgbTransformed.b);
-    console.log('@ response', rgbTransformed, response)
-    return response;
-
-    // const hslColor = gradientCalculator.hexToHsl(baseColor);
-    // const shadedHsl = gradientCalculator.toShade(hslColor, 1 - colorVariant);
-    // return gradientCalculator.hslToHex(shadedHsl);
-
-
-  }
 
 
 }

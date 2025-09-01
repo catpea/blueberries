@@ -6,6 +6,30 @@ export class ColorMath {
     return Math.max(min, Math.min(max, value));
   }
 
+  static interpolate(c1, c2, ratio) {
+
+
+    const r = Math.round(c1.r + (c2.r - c1.r) * ratio);
+    const g = Math.round(c1.g + (c2.g - c1.g) * ratio);
+    const b = Math.round(c1.b + (c2.b - c1.b) * ratio);
+
+    return {r, g, b};
+  }
+
+  static mix(original, additive, sensitivity) {
+
+
+  const mixed = {
+    r: Math.round(original.r * (1 - sensitivity) + additive.r * sensitivity),
+    g: Math.round(original.g * (1 - sensitivity) + additive.g * sensitivity),
+    b: Math.round(original.b * (1 - sensitivity) + additive.b * sensitivity)
+  };
+
+    return mixed;
+  }
+
+
+
   static hexToRgb(hex) {
     if(hex.length == 4) hex = hex + hex.substr(1, 3);
 
