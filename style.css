@@ -144,7 +144,7 @@ offcanvas-panel .footer {
  .preview {
     box-sizing: border-box;
 
-   --scale: 0.2;              /* change this if you want a different scale */
+   --scale: var(--preview-scale, 0.5);              /* change this if you want a different scale */
 
    transform: scale(var(--scale));
    transform-origin: top left;

@@ -75,7 +75,7 @@ template.innerHTML = `
     */
 
   </style>
-  <table class="table debug-message debug-visible"  data-debug="theme-grid">
+  <table class="table">
     <thead>
       <tr id="tableHeader">
       </tr>
@@ -155,14 +155,14 @@ export class ThemeGrid extends HTMLElement {
   // level5,  level4,  level3,  level2,  level1
   // caption,  backdrop,  background,  raised,  foreground,  text,  link,  info,  success,  warning,  danger,  muted,
   #variables = new ReactiveArray(
-    { id: "caption",       transformer: new Signal('foxfire'), power: new Signal(0.5),   sensitivity: new Signal(0), },
-    { id: "backdrop",      transformer: new Signal('foxfire'), power: new Signal(0.5),   sensitivity: new Signal(0), },
-    { id: "background",    transformer: new Signal('foxfire'), power: new Signal(0.5),   sensitivity: new Signal(0), },
-    { id: "border",        transformer: new Signal('foxfire'), power: new Signal(0.5),   sensitivity: new Signal(0), },
-    { id: "raised",        transformer: new Signal('foxfire'), power: new Signal(0.5),   sensitivity: new Signal(0), },
-    { id: "foreground",    transformer: new Signal('foxfire'), power: new Signal(0.5),   sensitivity: new Signal(0), },
-    { id: "text",          transformer: new Signal('foxfire'), power: new Signal(0.5),   sensitivity: new Signal(0), },
-    { id: "link",          transformer: new Signal('foxfire'), power: new Signal(0.5),   sensitivity: new Signal(0), },
+    { id: "caption",       transformer: new Signal('oilSlick'), power: new Signal(0.6),   sensitivity: new Signal(.3), },
+    { id: "backdrop",      transformer: new Signal('oilSlick'), power: new Signal(0.3),   sensitivity: new Signal(.3), },
+    { id: "background",    transformer: new Signal('oilSlick'), power: new Signal(0.4),   sensitivity: new Signal(.3), },
+    { id: "border",        transformer: new Signal('oilSlick'), power: new Signal(0.7),   sensitivity: new Signal(.3), },
+    { id: "raised",        transformer: new Signal('oilSlick'), power: new Signal(0.7),   sensitivity: new Signal(.3), },
+    { id: "foreground",    transformer: new Signal('oilSlick'), power: new Signal(0.9),   sensitivity: new Signal(.3), },
+    { id: "text",          transformer: new Signal('oilSlick'), power: new Signal(0.8),   sensitivity: new Signal(.3), },
+    { id: "link",          transformer: new Signal('oilSlick'), power: new Signal(0.9),   sensitivity: new Signal(.3), },
 
     // {id: 'info', value:new Signal(0.8)},
     // {id: 'success', value:new Signal(0.9)},
@@ -329,6 +329,7 @@ return Math.pow(t, 0.8); // Slows down the progression toward the end
     this.tableHeader.textContent = "";
     const th = document.createElement("th"); // ID/blank Header (never changes)
     th.setAttribute("scope", "col");
+    th.innerText = 'override';
     this.tableHeader.appendChild(th);
     for (const { id } of this.#variables) {
       const th = document.createElement("th");
@@ -338,35 +339,65 @@ return Math.pow(t, 0.8); // Slows down the progression toward the end
     }
   }
 
-  renderSensitivityAdjusters() {
-    this.sensitivityAdjusters.textContent = "";
 
-    const th = document.createElement("th");
-    th.setAttribute("scope", "row");
-    th.textContent = "sensitivity";
-    this.sensitivityAdjusters.appendChild(th);
+  renderTransformerSelectors() {
+    this.transformerSelectors.textContent = "";
+
+    const td = document.createElement("td");
+
+
+      // DROPDOWN
+      const transformerSelect = document.createElement("select");
+      for(const {value, text} of this.#colorFilters){
+        const transformerOption = document.createElement("option");
+        transformerOption.setAttribute("value", value);
+        transformerOption.innerText = text;
+        transformerSelect.appendChild(transformerOption);
+      }
+      // transformerSelect.value = entry.transformer.value;
+      td.appendChild(transformerSelect);
+      // DROPDOWN HANDLER
+      const eventHandler = (e) => {
+        for (const entry of this.#variables) {
+          entry.transformer.value = e.target.value;
+        }
+      };
+      const disposableId = `transformer-select-override`;
+      const disposableListener = new DisposableEventListener(transformerSelect, "change", eventHandler);
+      this.#disposables.dispose(disposableId);
+      this.#disposables.add(disposableListener, disposableId);
+
+
+
+    this.transformerSelectors.appendChild(td);
 
     for (const entry of this.#variables) {
       const td = document.createElement("td");
 
-      const sensitivityInput = document.createElement("input");
-      sensitivityInput.setAttribute("type", "number");
-      sensitivityInput.setAttribute("min", "0");
-      sensitivityInput.setAttribute("max", "1");
-      sensitivityInput.setAttribute("step", "0.01");
-      sensitivityInput.setAttribute("value", entry.sensitivity.value);
-      td.appendChild(sensitivityInput);
+      // DROPDOWN
+      const transformerSelect = document.createElement("select");
+      for(const {value, text} of this.#colorFilters){
+        const transformerOption = document.createElement("option");
+        transformerOption.setAttribute("value", value);
+        transformerOption.innerText = text;
+        transformerSelect.appendChild(transformerOption);
+      }
+      td.appendChild(transformerSelect);
+      // FROM SIGNAL HANDLER FOR ALL
+      const transformerSignalUpdateHandler = transformerValue => transformerSelect.value = transformerValue;
+      const fromSignalDisposableId = `transformer-signal-${entry.id}`;
+      const fromSignalDisposableListener = new DisposableSinusoidalListener(entry.transformer, transformerSignalUpdateHandler);
+      this.#disposables.dispose(fromSignalDisposableId);
+      this.#disposables.add(fromSignalDisposableListener, fromSignalDisposableId);
+      // FROM DROPDOWN HANDLER
+      const eventHandler = (e) => entry.transformer.value = e.target.value;
+      const fromDropdownDisposableId = `transformer-select-${entry.id}`;
+      const fromDropdownDisposableListener = new DisposableEventListener(transformerSelect, "change", eventHandler);
+      this.#disposables.dispose(fromDropdownDisposableId);
+      this.#disposables.add(fromDropdownDisposableListener, fromDropdownDisposableId);
 
-      const eventHandler = (e) => {
-        entry.sensitivity.value = e.target.value;
-      };
+      this.transformerSelectors.appendChild(td);
 
-      const disposableId = `sensitivity-input-${entry.id}`;
-      const disposableListener = new DisposableEventListener(sensitivityInput, "input", eventHandler);
-      this.#disposables.dispose(disposableId);
-      this.#disposables.add(disposableListener, disposableId);
-
-      this.sensitivityAdjusters.appendChild(td);
     }
   }
 
@@ -374,10 +405,26 @@ return Math.pow(t, 0.8); // Slows down the progression toward the end
   renderPowerAdjusters() {
     this.powerAdjusters.textContent = "";
 
-    const th = document.createElement("th");
-    th.setAttribute("scope", "row");
-    th.textContent = "power";
-    this.powerAdjusters.appendChild(th);
+    const td = document.createElement("td");
+    // INPUT
+    const powerInput = document.createElement("input");
+    powerInput.setAttribute("type", "number");
+    powerInput.setAttribute("min", "0");
+    powerInput.setAttribute("max", "1");
+    powerInput.setAttribute("step", "0.1");
+    // powerInput.setAttribute("value", entry.power.value);
+    td.appendChild(powerInput);
+    // HANDLER
+    const eventHandler = (e) => {
+      for (const entry of this.#variables) {
+        entry.power.value = e.target.value;
+      }
+    };
+    const disposableId = `power-input-override`;
+    const disposableListener = new DisposableEventListener(powerInput, "input", eventHandler);
+    this.#disposables.dispose(disposableId);
+    this.#disposables.add(disposableListener, disposableId);
+    this.powerAdjusters.appendChild(td);
 
     for (const entry of this.#variables) {
       const td = document.createElement("td");
@@ -390,6 +437,14 @@ return Math.pow(t, 0.8); // Slows down the progression toward the end
       powerInput.setAttribute("value", entry.power.value);
       td.appendChild(powerInput);
 
+
+      // FROM SIGNAL HANDLER FOR ALL
+      const powerSignalUpdateHandler = powerValue => powerInput.value = powerValue;
+      const fromSignalDisposableId = `power-signal-${entry.id}`;
+      const fromSignalDisposableListener = new DisposableSinusoidalListener(entry.power, powerSignalUpdateHandler);
+      this.#disposables.dispose(fromSignalDisposableId);
+      this.#disposables.add(fromSignalDisposableListener, fromSignalDisposableId);
+      // FROM UI
       const eventHandler = (e) => {
         entry.power.value = e.target.value;
       };
@@ -404,40 +459,61 @@ return Math.pow(t, 0.8); // Slows down the progression toward the end
   }
 
 
-  renderTransformerSelectors() {
-    this.transformerSelectors.textContent = "";
+  renderSensitivityAdjusters() {
+    this.sensitivityAdjusters.textContent = "";
 
-    const th = document.createElement("th");
-    th.setAttribute("scope", "row");
-    th.textContent = "transformer";
-    this.transformerSelectors.appendChild(th);
+
+    const td = document.createElement("td");
+    // INPUT
+    const sensitivityInput = document.createElement("input");
+    sensitivityInput.setAttribute("type", "number");
+    sensitivityInput.setAttribute("min", "0");
+    sensitivityInput.setAttribute("max", "1");
+    sensitivityInput.setAttribute("step", "0.1");
+    // sensitivityInput.setAttribute("value", entry.sensitivity.value);
+    td.appendChild(sensitivityInput);
+    // HANDLER
+    const eventHandler = (e) => {
+      for (const entry of this.#variables) {
+        entry.sensitivity.value = e.target.value;
+      }
+    };
+    const disposableId = `sensitivity-input-override`;
+    const disposableListener = new DisposableEventListener(sensitivityInput, "input", eventHandler);
+    this.#disposables.dispose(disposableId);
+    this.#disposables.add(disposableListener, disposableId);
+    this.sensitivityAdjusters.appendChild(td);
+
+
+
 
     for (const entry of this.#variables) {
       const td = document.createElement("td");
 
-      const transformerSelect = document.createElement("select");
+      // INPUT
+      const sensitivityInput = document.createElement("input");
+      sensitivityInput.setAttribute("type", "number");
+      sensitivityInput.setAttribute("min", "0");
+      sensitivityInput.setAttribute("max", "1");
+      sensitivityInput.setAttribute("step", "0.01");
+      sensitivityInput.setAttribute("value", entry.sensitivity.value);
+      td.appendChild(sensitivityInput);
 
-      for(const {value, text} of this.#colorFilters){
-        const transformerOption = document.createElement("option");
-        transformerOption.setAttribute("value", value);
-        transformerOption.innerText = text;
-        transformerSelect.appendChild(transformerOption);
-      }
-      transformerSelect.value = entry.transformer.value;
+      // FROM SIGNAL HANDLER FOR ALL
+      const sensitivitySignalUpdateHandler = sensitivityValue => sensitivityInput.value = sensitivityValue;
+      const fromSignalDisposableId = `sensitivity-signal-${entry.id}`;
+      const fromSignalDisposableListener = new DisposableSinusoidalListener(entry.sensitivity, sensitivitySignalUpdateHandler);
+      this.#disposables.dispose(fromSignalDisposableId);
+      this.#disposables.add(fromSignalDisposableListener, fromSignalDisposableId);
 
-      td.appendChild(transformerSelect);
-
-      const eventHandler = (e) => {
-        entry.transformer.value = e.target.value;
-      };
-
-      const disposableId = `transformer-select-${entry.id}`;
-      const disposableListener = new DisposableEventListener(transformerSelect, "change", eventHandler);
+      // HANDLER
+      const eventHandler = (e) => entry.sensitivity.value = e.target.value;
+      const disposableId = `sensitivity-input-${entry.id}`;
+      const disposableListener = new DisposableEventListener(sensitivityInput, "input", eventHandler);
       this.#disposables.dispose(disposableId);
       this.#disposables.add(disposableListener, disposableId);
 
-
-      this.transformerSelectors.appendChild(td);
+      this.sensitivityAdjusters.appendChild(td);
     }
   }
 

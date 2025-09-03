@@ -11,7 +11,7 @@ export class Signal {
 
     const options = Object.assign(defaults, config);
 
-    this.#id = options.id ?? (typeof crypto !== "undefined" ? crypto.randomUUID() : Math.random().toString(36).substr(2));
+    this.#id = options.id ?? ( (typeof crypto !== "undefined" && typeof crypto.randomUUID == "function") ? crypto.randomUUID() : Math.random().toString(36).substr(2));
     this.label = options.label;
     this.#schedule = options.schedule; // scheduler support
     this.#onRead = options.onRead; // scheduler support

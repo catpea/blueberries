@@ -43,12 +43,12 @@ template.innerHTML = html`
       <section data-title="Design View">
         <horizontal-view>
 
-          <section style="min-width: 18rem; hmin-eight: 15rem; border-radius: 8px;">
+          <section style="width: 12rem; hmin-eight: 15rem; border-radius: 8px;">
           <link href="style.css" rel="stylesheet">
           <link-style event="generated"></link-style>
 
 
-          <div class="previeww">
+          <div class="preview" style="--preview-scale: .9;">
 
             <div class="card up">
               level 1
@@ -68,6 +68,66 @@ template.innerHTML = html`
 
 
           </section>
+
+
+          <section style="--border-radius: 0; border-radius: var(--border-radius); width: max(320px, 25vw); height: 320px; padding-right: 1rem;">
+
+          <link href="style.css" rel="stylesheet">
+          <link href="application.css" rel="stylesheet">
+
+          <link-style event="generated"></link-style>
+
+            <div class="preview" style="--preview-scale: .4;">
+            <web-application class="sidebar-application theme1">
+
+              <header>
+                My Application
+              </header>
+
+              <figure>
+                <img src="logo.svg" alt="App Logo">
+              </figure>
+
+              <!-- Search box -->
+              <search-form placeholder="Search…">searchform</search-form>
+
+              <!-- Profile / user info -->
+              <user-info fullname="Jane Doe" username="jdoe" avatar="jdoe.png">user info</user-info>
+
+              <!-- Main navigation menu -->
+              <nav>
+                <ul>
+                  <li><a href="#">Dashboard</a></li>
+                  <li><a href="#">Projects</a></li>
+                </ul>
+              </nav>
+
+              <!-- Alerts / notifications -->
+              <alert-region>
+                INFO: Action Complete
+              </alert-region>
+
+              <!-- Properties / inspector panel -->
+              <aside>
+                <h2>Properties</h2>
+                <!-- content -->
+              </aside>
+
+              <!-- Main workspace -->
+              <main>
+                <h1>Welcome</h1>
+                <p style="min-height: 20rem;">Main application content goes here.</p>
+              </main>
+
+              <!-- Footer -->
+              <footer>
+                <small>&copy; 2025 MyCompany</small>
+              </footer>
+
+            </web-application>
+            </div>
+          </section>
+
 
           <section style="--border-radius: 8px; border-radius: var(--border-radius); width: max(320px, 25vw); height: 320px;">
 
